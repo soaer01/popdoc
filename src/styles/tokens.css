@@ -1,0 +1,71 @@
+:root {
+  /* Surfaces */
+  --paper: #edeff2;
+  --sheet: #ffffff;
+  --rule: #d5d9e0;
+  --rule-strong: #b9bfca;
+
+  /* Text */
+  --ink: #18203a;
+  --graphite: #5b6275;
+  --faint: #8a90a0;
+
+  /* Accent: carbon-copy blue */
+  --carbon: #2f43b5;
+  --carbon-soft: #e4e8fa;
+
+  /* Diff */
+  --del: #c2303b;
+  --del-soft: #fbe4e6;
+  --ins: #1e7a4c;
+  --ins-soft: #dff3e8;
+
+  /* Provenance: where a paragraph came from */
+  --origin-typed: #18203a;
+  --origin-pasted: #b7791f;
+  --origin-ai: #7048c8;
+  --origin-ai-edited: #128283;
+  --origin-translated: #b2447a;
+
+  /* Type */
+  --serif: 'Newsreader', Georgia, serif;
+  --sans: 'Instrument Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Scale (1.25) */
+  --t-xs: 0.75rem;
+  --t-sm: 0.875rem;
+  --t-md: 1rem;
+  --t-lg: 1.25rem;
+  --t-xl: 1.563rem;
+  --t-2xl: 1.953rem;
+  --t-3xl: 2.441rem;
+  --t-4xl: 3.815rem;
+
+  --radius-sm: 3px;
+  --radius: 6px;
+  --shadow-sheet: 0 1px 0 var(--rule), 0 8px 24px -12px rgba(24, 32, 58, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #141826;
+    --sheet: #1c2133;
+    --rule: #2c3349;
+    --rule-strong: #414a66;
+    --ink: #e6e9f2;
+    --graphite: #a3aac0;
+    --faint: #737b94;
+    --carbon: #8c9bff;
+    --carbon-soft: #262f57;
+    --del: #ff7b85;
+    --del-soft: #46222a;
+    --ins: #5fd39a;
+    --ins-soft: #173a2b;
+    --origin-typed: #c9cfe0;
+    --origin-pasted: #e3a84a;
+    --origin-ai: #a68bf0;
+    --origin-ai-edited: #4cc6c6;
+    --origin-translated: #e57aaf;
+  }
+}
