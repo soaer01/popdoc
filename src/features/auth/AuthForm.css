@@ -1,0 +1,27 @@
+.auth {
+  flex: 1;
+  display: grid;
+  place-items: start center;
+  padding: clamp(2rem, 8vh, 5rem) 16px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  border-left: 3px solid var(--carbon);
+}
+.auth-card h1 {
+  font-size: var(--t-2xl);
+  margin-bottom: 1.25rem;
+}
+.auth-submit {
+  width: 100%;
+  justify-content: center;
+  padding: 0.7em;
+  margin: 0.5rem 0 1rem;
+}
+.auth-demo {
+  border-top: 1px dashed var(--rule-strong);
+  padding-top: 0.75rem;
+  margin: 0;
+}

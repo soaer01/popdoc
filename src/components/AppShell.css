@@ -41,3 +41,12 @@
 .topnav a:hover {
   color: var(--ink);
 }
+.topnav-user {
+  color: var(--ink);
+  font-weight: 500;
+}
+@media (max-width: 520px) {
+  .topnav-user {
+    display: none;
+  }
+}
