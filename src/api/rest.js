@@ -21,4 +21,10 @@ export const rest = {
     open: (branchId) => http(`/branches/${branchId}`),
     commit: (branchId, body) => http(`/branches/${branchId}/commits`, { method: 'POST', body }),
   },
+  history: {
+    list: (branchId, { cursor = 0, limit = 15 } = {}) =>
+      http(`/branches/${branchId}/commits?cursor=${cursor}&limit=${limit}`),
+    get: (commitId) => http(`/commits/${commitId}`),
+    restore: (branchId, body) => http(`/branches/${branchId}/restore`, { method: 'POST', body }),
+  },
 };

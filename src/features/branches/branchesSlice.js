@@ -12,6 +12,10 @@ export const saveCommit = createAsyncThunk('branches/commit', ({ branchId, ...bo
   api.branches.commit(branchId, body)
 );
 
+export const restoreCommit = createAsyncThunk('branches/restore', ({ branchId, ...body }) =>
+  api.history.restore(branchId, body)
+);
+
 const branchesSlice = createSlice({
   name: 'branches',
   initialState: {
@@ -45,6 +49,9 @@ const branchesSlice = createSlice({
       .addCase(saveCommit.pending, (s) => {
         s.saving = true;
         s.error = null;
+      })
+      .addCase(restoreCommit.fulfilled, (s, a) => {
+        s.open = a.payload;
       })
       .addCase(saveCommit.fulfilled, (s, a) => {
         s.saving = false;

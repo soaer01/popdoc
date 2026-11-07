@@ -6,6 +6,7 @@ import Dashboard from './features/docs/Dashboard.jsx';
 import DocLayout from './features/docs/DocLayout.jsx';
 import Members from './features/docs/Members.jsx';
 import Draft from './features/branches/Draft.jsx';
+import History from './features/history/History.jsx';
 import Landing from './pages/Landing.jsx';
 import NotFound from './pages/NotFound.jsx';
 
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="docs" element={<Dashboard />} />
             <Route path="docs/:docId" element={<DocLayout />}>
               <Route index element={<Draft />} />
+              <Route path="history" element={<History />} />
               <Route path="members" element={<Members />} />
             </Route>
           </Route>

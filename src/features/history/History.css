@@ -1,0 +1,119 @@
+.history {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  gap: 2rem;
+  padding: 1.5rem clamp(16px, 3vw, 32px) 3rem;
+}
+.history-head .field {
+  max-width: 260px;
+}
+.verify {
+  padding-left: 0.6rem;
+  border-left: 3px solid;
+}
+.verify.is-ok {
+  border-color: var(--ins);
+}
+.verify.is-bad {
+  border-color: var(--del);
+  color: var(--del);
+}
+
+/* A single lane: dots on a vertical rule; merge commits get a hollow double ring */
+.dag {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  position: relative;
+}
+.dag::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: var(--rule-strong);
+}
+.dag-row {
+  position: relative;
+  display: grid;
+  gap: 0.1rem;
+  width: 100%;
+  padding: 0.55rem 0.6rem 0.55rem 2rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.dag-row:hover,
+.dag-row.is-selected {
+  background: var(--sheet);
+}
+.dag-dot {
+  position: absolute;
+  left: 6px;
+  top: 0.85rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid var(--paper);
+}
+.dag-row.is-merge .dag-dot {
+  background: var(--paper);
+  border: 3px double var(--carbon);
+}
+.dag-row.is-selected .dag-dot {
+  background: var(--carbon);
+}
+.dag-msg {
+  font-weight: 500;
+}
+.dag-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.75rem;
+}
+
+.history-view {
+  min-width: 0;
+}
+.history-view-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.history-view-head h2 {
+  font-size: var(--t-xl);
+  margin-bottom: 0.2rem;
+}
+.history-view-head p {
+  margin: 0;
+}
+.full-hash {
+  word-break: break-all;
+}
+.history-msg {
+  padding: 0.6rem 0.8rem;
+  background: var(--carbon-soft);
+  border-radius: var(--radius-sm);
+}
+.read-para {
+  font-family: var(--serif);
+  font-size: 1.1875rem;
+  line-height: 1.65;
+}
+.read-para.origin-typed {
+  border-left-color: var(--rule-strong) !important;
+}
+
+@media (max-width: 860px) {
+  .history {
+    grid-template-columns: 1fr;
+  }
+}
