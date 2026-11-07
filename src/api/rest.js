@@ -8,4 +8,11 @@ export const rest = {
     signup: (body) => http('/auth/signup', { method: 'POST', body }),
     logout: () => http('/auth/logout', { method: 'POST' }),
   },
+  docs: {
+    list: () => http('/documents'),
+    get: (docId) => http(`/documents/${docId}`),
+    create: (body) => http('/documents', { method: 'POST', body }),
+    addMember: (docId, body) => http(`/documents/${docId}/members`, { method: 'POST', body }),
+    setRole: (docId, body) => http(`/documents/${docId}/members/${body.userId}`, { method: 'PATCH', body }),
+  },
 };

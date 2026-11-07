@@ -1,20 +1,24 @@
 // In-browser stand-in for MongoDB while the backend is being built.
 // State is kept in localStorage so a refresh doesn't wipe the demo.
-import { seed } from './seed.js';
+import { buildSeed } from './seed.js';
 
-const KEY = 'popdoc-mock-v1';
+const KEY = 'popdoc-mock-v2';
 
-function load() {
+export let db = null;
+
+async function load() {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) return JSON.parse(raw);
   } catch {
     /* storage unavailable: fall back to seed */
   }
-  return structuredClone(seed);
+  return buildSeed();
 }
 
-export const db = load();
+export const ready = load().then((data) => {
+  db = data;
+});
 
 export function persist() {
   try {
@@ -33,7 +37,10 @@ export function resetDb() {
   window.location.reload();
 }
 
-export const delay = (ms = 250) => new Promise((r) => setTimeout(r, ms));
+export async function delay(ms = 250) {
+  await ready;
+  await new Promise((r) => setTimeout(r, ms));
+}
 
 export function uid(prefix) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
