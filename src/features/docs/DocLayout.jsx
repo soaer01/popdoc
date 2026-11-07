@@ -5,7 +5,10 @@ import { roleNames } from '../../lib/format.js';
 import { fetchDoc, selectDoc } from './docsSlice.js';
 import './DocLayout.css';
 
-const tabs = [{ to: 'members', label: 'Members' }];
+const tabs = [
+  { to: '.', label: 'Draft', end: true },
+  { to: 'members', label: 'Members' },
+];
 
 export default function DocLayout() {
   const { docId } = useParams();

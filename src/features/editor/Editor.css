@@ -1,0 +1,47 @@
+/* The document sheet. Each paragraph carries its provenance as a left margin rule. */
+.prose {
+  font-family: var(--serif);
+  font-size: 1.1875rem;
+  line-height: 1.65;
+  outline: none;
+  min-height: 50vh;
+}
+.prose p,
+.read-para {
+  margin: 0 0 1.1em;
+  padding-left: 1rem;
+  border-left: 3px solid transparent;
+  max-width: 68ch;
+}
+.prose .origin-typed {
+  border-left-color: var(--rule-strong) !important;
+}
+.prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--faint);
+  pointer-events: none;
+}
+.editor.is-readonly .prose {
+  cursor: default;
+}
+
+.legend {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+  font-size: var(--t-sm);
+}
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.legend-swatch {
+  width: 3px;
+  height: 1.1em;
+  border-left: 3px solid;
+}

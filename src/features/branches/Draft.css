@@ -1,0 +1,98 @@
+.draft {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 260px;
+  gap: 2rem;
+  padding: 1.5rem clamp(16px, 3vw, 32px) 3rem;
+}
+.rail-title {
+  font-family: var(--sans);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+.branch-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: grid;
+  gap: 0.15rem;
+}
+.branch {
+  display: grid;
+  width: 100%;
+  text-align: left;
+  gap: 0.05rem;
+  padding: 0.5rem 0.6rem;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+.branch:hover {
+  background: var(--sheet);
+}
+.branch.is-current {
+  border-left-color: var(--carbon);
+  background: var(--sheet);
+}
+.branch-name {
+  font-family: var(--mono);
+  font-size: var(--t-sm);
+}
+.rail-note {
+  margin: 0;
+}
+
+.sheet-wrap {
+  min-width: 0;
+}
+.sheet-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+.sheet-bar strong {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-weight: 500;
+}
+.doc-sheet {
+  padding: clamp(1.25rem, 4vw, 3rem) clamp(1rem, 4vw, 3.5rem);
+}
+
+.margin {
+  display: grid;
+  align-content: start;
+  gap: 2rem;
+}
+.save .btn {
+  width: 100%;
+  justify-content: center;
+}
+.paste-note {
+  margin-top: 0.75rem;
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--origin-pasted);
+}
+
+@media (max-width: 1080px) {
+  .draft {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+  .margin {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 720px) {
+  .draft {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .margin {
+    grid-template-columns: 1fr;
+  }
+}

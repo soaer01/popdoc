@@ -15,4 +15,10 @@ export const rest = {
     addMember: (docId, body) => http(`/documents/${docId}/members`, { method: 'POST', body }),
     setRole: (docId, body) => http(`/documents/${docId}/members/${body.userId}`, { method: 'PATCH', body }),
   },
+  branches: {
+    list: (docId) => http(`/documents/${docId}/branches`),
+    ensureMine: (docId) => http(`/documents/${docId}/branches/mine`, { method: 'PUT' }),
+    open: (branchId) => http(`/branches/${branchId}`),
+    commit: (branchId, body) => http(`/branches/${branchId}/commits`, { method: 'POST', body }),
+  },
 };
