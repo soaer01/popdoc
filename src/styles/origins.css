@@ -1,0 +1,6 @@
+/* Provenance margin colours, shared by the landing page, editor and diff views */
+.origin-typed { border-left-color: var(--origin-typed) !important; }
+.origin-pasted { border-left-color: var(--origin-pasted) !important; }
+.origin-ai { border-left-color: var(--origin-ai) !important; }
+.origin-ai-edited { border-left-color: var(--origin-ai-edited) !important; }
+.origin-translated { border-left-color: var(--origin-translated) !important; }

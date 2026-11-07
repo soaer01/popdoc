@@ -1,0 +1,96 @@
+/* Shared UI primitives */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.5em 0.95em;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--sheet);
+  color: var(--ink);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover {
+  border-color: var(--ink);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--carbon);
+  border-color: var(--carbon);
+  color: #fff;
+}
+.btn-primary:hover {
+  border-color: var(--ink);
+}
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+}
+.btn-danger {
+  color: var(--del);
+}
+
+.field {
+  display: grid;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+  font-size: var(--t-sm);
+}
+.field input,
+.field select,
+.field textarea {
+  padding: 0.55em 0.7em;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--sheet);
+  font-size: var(--t-md);
+}
+.field-error {
+  color: var(--del);
+  font-size: var(--t-sm);
+}
+
+.sheet {
+  background: var(--sheet);
+  box-shadow: var(--shadow-sheet);
+  border-radius: var(--radius-sm);
+}
+
+.muted {
+  color: var(--graphite);
+}
+.small {
+  font-size: var(--t-sm);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.1em 0.5em;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: var(--t-xs);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.empty {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: var(--graphite);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

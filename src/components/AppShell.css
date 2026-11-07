@@ -1,0 +1,43 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem clamp(16px, 3vw, 32px);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--serif);
+  font-size: var(--t-lg);
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+.wordmark-rule {
+  width: 4px;
+  height: 1.3em;
+  background: var(--carbon);
+}
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: var(--t-sm);
+}
+.topnav a {
+  color: var(--graphite);
+  text-decoration: none;
+}
+.topnav a.active,
+.topnav a:hover {
+  color: var(--ink);
+}
