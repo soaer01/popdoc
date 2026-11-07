@@ -7,6 +7,7 @@ import './DocLayout.css';
 
 const tabs = [
   { to: '.', label: 'Draft', end: true },
+  { to: 'pulls', label: 'Pull requests' },
   { to: 'history', label: 'History' },
   { to: 'members', label: 'Members' },
 ];

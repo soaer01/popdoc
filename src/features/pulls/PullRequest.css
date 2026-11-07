@@ -1,0 +1,93 @@
+.pr {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem clamp(16px, 3vw, 32px) 3rem;
+}
+.pr-head h2 {
+  font-size: var(--t-2xl);
+  margin-bottom: 0.4rem;
+}
+.pr-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.8rem;
+  color: var(--graphite);
+}
+.pr-state {
+  padding: 0.15em 0.6em;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-weight: 600;
+  background: var(--ins);
+}
+.pr-state.is-merged {
+  background: var(--carbon);
+}
+.pr-state.is-closed {
+  background: var(--graphite);
+}
+.pr-desc {
+  max-width: 68ch;
+  margin-top: 0.75rem;
+}
+.pr-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+.pr-diff-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--graphite);
+}
+.ins-count {
+  color: var(--ins);
+  font-weight: 600;
+}
+.del-count {
+  color: var(--del);
+  font-weight: 600;
+}
+.pr-sheet {
+  padding: 1rem clamp(1rem, 3vw, 2rem);
+}
+.pr-thread {
+  margin-top: 2rem;
+  max-width: 640px;
+}
+.pr-thread h3,
+.pr-side h3 {
+  font-family: var(--sans);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+.pr-thread .note {
+  margin-bottom: 0.6rem;
+}
+.pr-thread .note p {
+  margin: 0.2rem 0 0;
+}
+.pr-side {
+  display: grid;
+  align-content: start;
+  gap: 1.75rem;
+}
+.pr-side section {
+  padding-top: 0.75rem;
+  border-top: 2px solid var(--ink);
+}
+.btn.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+@media (max-width: 900px) {
+  .pr-body {
+    grid-template-columns: 1fr;
+  }
+}

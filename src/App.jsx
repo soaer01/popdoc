@@ -7,6 +7,9 @@ import DocLayout from './features/docs/DocLayout.jsx';
 import Members from './features/docs/Members.jsx';
 import Draft from './features/branches/Draft.jsx';
 import History from './features/history/History.jsx';
+import Pulls from './features/pulls/Pulls.jsx';
+import NewPull from './features/pulls/NewPull.jsx';
+import PullRequest from './features/pulls/PullRequest.jsx';
 import Landing from './pages/Landing.jsx';
 import NotFound from './pages/NotFound.jsx';
 
@@ -22,6 +25,9 @@ export default function App() {
             <Route path="docs" element={<Dashboard />} />
             <Route path="docs/:docId" element={<DocLayout />}>
               <Route index element={<Draft />} />
+              <Route path="pulls" element={<Pulls />} />
+              <Route path="pulls/new" element={<NewPull />} />
+              <Route path="pulls/:prId" element={<PullRequest />} />
               <Route path="history" element={<History />} />
               <Route path="members" element={<Members />} />
             </Route>

@@ -1,0 +1,85 @@
+.diff {
+  display: grid;
+  gap: 0.25rem;
+}
+.diff-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 1.25rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.diff-row:last-child {
+  border-bottom: 0;
+}
+.diff-para {
+  padding-left: 1rem;
+  border-left: 3px solid var(--rule-strong);
+}
+.diff-para.origin-typed {
+  border-left-color: var(--rule-strong) !important;
+}
+.diff-para p {
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  line-height: 1.65;
+  margin: 0;
+  max-width: 68ch;
+}
+.diff-status {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.is-added .diff-para p {
+  background: var(--ins-soft);
+}
+.is-added .diff-status {
+  color: var(--ins);
+}
+.is-removed .diff-para p {
+  color: var(--del);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.is-removed .diff-status {
+  color: var(--del);
+}
+.is-moved .diff-status {
+  color: var(--carbon);
+}
+.is-same .diff-para p {
+  color: var(--graphite);
+}
+.diff ins {
+  background: var(--ins-soft);
+  color: var(--ins);
+  text-decoration: none;
+  border-bottom: 2px solid var(--ins);
+}
+.diff del {
+  background: var(--del-soft);
+  color: var(--del);
+}
+.diff-notes {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+}
+.note {
+  padding: 0.45rem 0.6rem;
+  background: var(--paper);
+  border-radius: var(--radius-sm);
+}
+.diff-notes .btn {
+  justify-self: start;
+  padding: 0.2em 0;
+  color: var(--carbon);
+}
+
+@media (max-width: 720px) {
+  .diff-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}

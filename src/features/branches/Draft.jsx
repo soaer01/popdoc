@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
 import { shortHash } from '../../lib/hash.js';
 import { timeAgo } from '../../lib/format.js';
 import Editor from '../editor/Editor.jsx';
@@ -143,6 +143,9 @@ export default function Draft() {
             <button className="btn btn-primary" disabled={!dirty || saving}>
               {saving ? 'Saving…' : 'Save point'}
             </button>
+            <Link to="pulls/new" className="btn open-pr">
+              Open pull request
+            </Link>
             {pasteNote && (
               <p className="small paste-note">Pasted text is marked in the margin and stays marked in the record.</p>
             )}

@@ -3,6 +3,7 @@ import { db, persist, delay, uid, fail } from './db.js';
 import { currentUser, docView, requireDoc, requireUser, roleIn } from './access.js';
 import { branches } from './branches.js';
 import { history } from './history.js';
+import { pulls } from './pulls.js';
 
 const auth = {
   async me() {
@@ -92,4 +93,4 @@ const docs = {
   },
 };
 
-export const mock = { auth, docs, branches, history };
+export const mock = { auth, docs, branches, history, pulls };
