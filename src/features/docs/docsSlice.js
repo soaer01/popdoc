@@ -4,6 +4,7 @@ import { api } from '../../api/index.js';
 export const fetchDocs = createAsyncThunk('docs/list', () => api.docs.list());
 export const fetchDoc = createAsyncThunk('docs/get', (docId) => api.docs.get(docId));
 export const createDoc = createAsyncThunk('docs/create', (body) => api.docs.create(body));
+export const renameDoc = createAsyncThunk('docs/rename', ({ docId, title }) => api.docs.rename(docId, { title }));
 export const addMember = createAsyncThunk('docs/addMember', ({ docId, ...body }) => api.docs.addMember(docId, body));
 export const setRole = createAsyncThunk('docs/setRole', ({ docId, ...body }) => api.docs.setRole(docId, body));
 
@@ -37,7 +38,7 @@ const docsSlice = createSlice({
       .addCase(fetchDoc.rejected, (s, a) => {
         s.error = a.error.message;
       });
-    for (const t of [fetchDoc, createDoc, addMember, setRole]) {
+    for (const t of [fetchDoc, createDoc, renameDoc, addMember, setRole]) {
       b.addCase(t.fulfilled, (s, a) => upsert(s, a.payload));
     }
   },

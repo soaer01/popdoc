@@ -71,6 +71,21 @@ const docs = {
     persist();
     return docView(doc, user);
   },
+  // Owners and members can rename; reviewers and viewers can't.
+  async rename(docId, { title }) {
+    await delay(150);
+    const user = requireUser();
+    const doc = requireDoc(docId, user);
+    if (!['owner', 'member'].includes(roleIn(doc, user.id))) fail('Only owners and members can rename the document.', 403);
+    const next = String(title || '').trim().slice(0, 140);
+    if (!next) fail('The title can’t be empty.');
+    if (next !== doc.title) {
+      doc.titleHistory = [...(doc.titleHistory || []), { title: doc.title, by: user.id, at: new Date().toISOString() }];
+      doc.title = next;
+      persist();
+    }
+    return docView(doc, user);
+  },
   async addMember(docId, { email, role }) {
     await delay();
     const user = requireUser();

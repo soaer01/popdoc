@@ -17,6 +17,32 @@
   font-size: var(--t-2xl);
   margin-bottom: 0.15rem;
 }
+.doc-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin-bottom: 0.15rem;
+}
+.doc-title h1 {
+  margin: 0;
+}
+.doc-title .btn {
+  font-family: var(--sans);
+}
+.doc-title .btn-quiet {
+  color: var(--carbon);
+}
+.doc-title input {
+  font-family: var(--serif);
+  font-size: var(--t-xl);
+  min-width: min(28ch, 100%);
+  flex: 1;
+}
+.doc-title .field-error {
+  flex-basis: 100%;
+  margin: 0;
+}
 .doc-head p {
   margin: 0 0 1rem;
 }

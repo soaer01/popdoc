@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, Outlet, useParams } from 'react-router-dom';
-import { fetchDoc, selectDoc } from './docsSlice.js';
+import { fetchDoc, renameDoc, selectDoc } from './docsSlice.js';
 import './DocLayout.css';
 
 const roleSentence = {
@@ -25,10 +25,19 @@ export default function DocLayout() {
   const dispatch = useDispatch();
   const doc = useSelector(selectDoc(docId));
   const error = useSelector((s) => s.docs.error);
+  const [title, setTitle] = useState(null); // null while not renaming
+  const [renameError, setRenameError] = useState(null);
 
   useEffect(() => {
     dispatch(fetchDoc(docId));
   }, [docId, dispatch]);
+
+  async function onRename(e) {
+    e.preventDefault();
+    const action = await dispatch(renameDoc({ docId, title }));
+    if (action.error) return setRenameError(action.error.message);
+    setTitle(null);
+  }
 
   if (!doc) return <p className="empty">{error || 'Opening document…'}</p>;
 
@@ -36,7 +45,30 @@ export default function DocLayout() {
     <div className="doc">
       <header className="doc-head">
         <div>
-          <h1>{doc.title}</h1>
+          {title === null ? (
+            <div className="doc-title">
+              <h1>{doc.title}</h1>
+              {['owner', 'member'].includes(doc.myRole) && (
+                <button className="btn btn-quiet small" onClick={() => { setTitle(doc.title); setRenameError(null); }}>
+                  Rename
+                </button>
+              )}
+            </div>
+          ) : (
+            <form className="doc-title" onSubmit={onRename}>
+              <input
+                aria-label="Document title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={(e) => e.key === 'Escape' && setTitle(null)}
+                maxLength={140}
+                autoFocus
+              />
+              <button className="btn btn-primary small" disabled={!title.trim()}>Save title</button>
+              <button type="button" className="btn btn-quiet small" onClick={() => setTitle(null)}>Cancel</button>
+              {renameError && <p className="field-error">{renameError}</p>}
+            </form>
+          )}
           <p className="small muted">
             {roleSentence[doc.myRole]}
             {doc.round === 'idea' && ' Idea round: wording edits are on hold.'}
