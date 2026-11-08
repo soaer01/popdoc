@@ -1,0 +1,63 @@
+.ledger-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.ledger-head p {
+  max-width: 52ch;
+  margin: 0;
+}
+.ledger-scroll {
+  overflow-x: auto;
+}
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+.ledger-table th,
+.ledger-table td {
+  padding: 0.7rem 0.75rem 0.7rem 0;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  white-space: nowrap;
+}
+.ledger-table thead th {
+  font-weight: 500;
+  color: var(--graphite);
+  border-bottom-color: var(--rule-strong);
+}
+.ledger-table tbody th {
+  font-family: var(--serif);
+  font-size: var(--t-md);
+  font-weight: 500;
+}
+.ledger-table .num {
+  text-align: right;
+}
+.ticks {
+  font-family: var(--mono);
+  letter-spacing: 0.12em;
+  color: var(--carbon);
+}
+.tick-n {
+  margin-left: 0.4rem;
+  color: var(--ink);
+  letter-spacing: 0;
+}
+.faint {
+  color: var(--faint);
+}
+.inactive-flag {
+  display: block;
+  color: var(--origin-pasted);
+  font-weight: 600;
+}
+.ledger-share {
+  margin-top: 2.5rem;
+  max-width: 60ch;
+}

@@ -11,6 +11,7 @@ import Pulls from './features/pulls/Pulls.jsx';
 import NewPull from './features/pulls/NewPull.jsx';
 import PullRequest from './features/pulls/PullRequest.jsx';
 import Conflicts from './features/pulls/Conflicts.jsx';
+import Ledger from './features/ledger/Ledger.jsx';
 import Landing from './pages/Landing.jsx';
 import NotFound from './pages/NotFound.jsx';
 
@@ -31,6 +32,7 @@ export default function App() {
               <Route path="pulls/:prId" element={<PullRequest />} />
               <Route path="pulls/:prId/conflicts" element={<Conflicts />} />
               <Route path="history" element={<History />} />
+              <Route path="ledger" element={<Ledger />} />
               <Route path="members" element={<Members />} />
             </Route>
           </Route>

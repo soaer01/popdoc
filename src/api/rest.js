@@ -41,4 +41,10 @@ export const rest = {
     request: (docId, body) => http(`/documents/${docId}/ai/jobs`, { method: 'POST', body }),
     jobs: (docId) => http(`/documents/${docId}/ai/jobs`),
   },
+  ledger: {
+    get: (docId) => http(`/documents/${docId}/ledger`),
+    setShared: (docId, body) => http(`/documents/${docId}/ledger/sharing`, { method: 'PUT', body }),
+    setRound: (docId, body) => http(`/documents/${docId}/round`, { method: 'PUT', body }),
+    record: (docId) => http(`/documents/${docId}/record`),
+  },
 };

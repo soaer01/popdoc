@@ -5,6 +5,7 @@ import { branches } from './branches.js';
 import { history } from './history.js';
 import { pulls } from './pulls.js';
 import { ai } from './ai.js';
+import { ledger } from './ledger.js';
 
 const auth = {
   async me() {
@@ -94,4 +95,4 @@ const docs = {
   },
 };
 
-export const mock = { auth, docs, branches, history, pulls, ai };
+export const mock = { auth, docs, branches, history, pulls, ai, ledger };

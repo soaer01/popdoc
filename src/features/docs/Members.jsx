@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useOutletContext } from 'react-router-dom';
 import { roleNames, timeAgo } from '../../lib/format.js';
 import { addMember, setRole } from './docsSlice.js';
+import Rounds from './Rounds.jsx';
 import './Members.css';
 
 const roleHelp = {
@@ -30,6 +31,7 @@ export default function Members() {
 
   return (
     <section className="doc-page">
+      <Rounds doc={doc} />
       <h2>People and roles</h2>
       <table className="members">
         <thead>

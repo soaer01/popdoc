@@ -40,3 +40,18 @@
   flex: 1;
   min-width: 200px;
 }
+
+.rounds {
+  margin-bottom: 2.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--sheet);
+  border-left: 3px solid var(--carbon);
+}
+.rounds p {
+  max-width: 64ch;
+}
+.rounds-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}

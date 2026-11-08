@@ -9,7 +9,8 @@ const tabs = [
   { to: '.', label: 'Draft', end: true },
   { to: 'pulls', label: 'Pull requests' },
   { to: 'history', label: 'History' },
-  { to: 'members', label: 'Members' },
+  { to: 'ledger', label: 'Ledger' },
+  { to: 'members', label: 'People and rounds' },
 ];
 
 export default function DocLayout() {
@@ -29,7 +30,11 @@ export default function DocLayout() {
       <header className="doc-head">
         <div>
           <h1>{doc.title}</h1>
-          <p className="small muted">You are {roleNames[doc.myRole].toLowerCase()} on this document.</p>
+          <p className="small muted">
+            You are {roleNames[doc.myRole].toLowerCase()} on this document.
+            {doc.round === 'idea' && ' Idea round: wording edits are on hold.'}
+            {doc.round === 'polish' && ' Polish round: wording edits can be merged.'}
+          </p>
         </div>
         <nav className="doc-tabs" aria-label="Document sections">
           {tabs.map((t) => (
