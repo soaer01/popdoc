@@ -36,6 +36,11 @@
 .btn-danger {
   color: var(--del);
 }
+.btn.is-chosen {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--sheet);
+}
 
 .field {
   display: grid;

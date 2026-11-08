@@ -1,0 +1,26 @@
+.air .air-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.air-buttons {
+  display: flex;
+  gap: 0.3rem;
+}
+.air-buttons .btn {
+  padding: 0.3em 0.6em;
+}
+.air textarea {
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--serif);
+  background: var(--sheet);
+}
+.air > .btn {
+  margin-top: 0.9rem;
+  width: 100%;
+  justify-content: center;
+}

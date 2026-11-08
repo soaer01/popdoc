@@ -28,7 +28,8 @@ export function touch(doc, userId) {
   if (m) m.lastActiveAt = new Date().toISOString();
 }
 
-export const userName = (id) => db.users.find((u) => u.id === id)?.name || 'Unknown';
+export const userName = (id) =>
+  id === 'u_ai' ? 'AI assistant' : db.users.find((u) => u.id === id)?.name || 'Unknown';
 
 // What the client sees: members joined with names, plus the caller's role.
 export function docView(doc, user) {

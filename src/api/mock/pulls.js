@@ -21,10 +21,12 @@ function ancestorIds(id) {
 // Nearest common ancestor: the newest commit reachable from both heads.
 export function mergeBase(a, b) {
   const fromB = ancestorIds(b);
-  return [...ancestorIds(a)]
-    .map(findCommit)
-    .filter((c) => c && fromB.has(c.id))
-    .sort((x, y) => y.createdAt.localeCompare(x.createdAt))[0]?.id || null;
+  return (
+    [...ancestorIds(a)]
+      .map(findCommit)
+      .filter((c) => c && fromB.has(c.id))
+      .sort((x, y) => y.createdAt.localeCompare(x.createdAt))[0]?.id || null
+  );
 }
 
 const paras = (commitId) => findCommit(commitId)?.paragraphs || [];
@@ -33,6 +35,8 @@ function requirePr(prId, user) {
   const pr = db.pullRequests.find((p) => p.id === prId);
   if (!pr) fail('That pull request doesn’t exist.', 404);
   const doc = requireDoc(pr.docId, user);
+  if (pr.kind === 'ai' && pr.aiRequestedBy !== user.id)
+    fail('AI proposals are private to the person who asked for them.', 403);
   return { pr, doc };
 }
 
@@ -56,8 +60,64 @@ function prView(pr, user) {
     sourceName: source?.name,
     approvalNames: pr.approvals.map(userName),
     comments: pr.comments.map((c) => ({ ...c, authorName: userName(c.authorId) })),
-    isAuthor: pr.authorId === user.id || pr.aiRequestedBy === user.id,
+    isAuthor: pr.authorId === user.id,
+    isRequester: pr.aiRequestedBy === user.id,
+    targetName: db.branches.find((b) => b.id === pr.targetBranchId)?.name,
   };
+}
+
+// The requester goes through each AI change: accept it, edit it, or reject it.
+// Accepted text keeps the 'ai' origin; edited text becomes 'ai-edited'; rejected keeps the draft's text.
+async function mergeAiProposal(pr, doc, user, selections) {
+  if (pr.aiRequestedBy !== user.id) fail('Only the person who asked the AI can review its proposal.', 403);
+  const target = db.branches.find((b) => b.id === pr.targetBranchId);
+  const proposed = new Map(paras(pr.headId).map((p) => [p.id, p]));
+  const base = new Map(paras(pr.baseId).map((p) => [p.id, p]));
+  let changed = 0;
+  const merged = paras(target.headId).map((p) => {
+    const ai = proposed.get(p.id);
+    if (!ai || ai.text === base.get(p.id)?.text) return p;
+    const pick = selections[p.id];
+    if (pick === 'accept') {
+      changed++;
+      return ai;
+    }
+    if (pick && typeof pick === 'object' && pick.text?.trim()) {
+      changed++;
+      return {
+        ...ai,
+        text: pick.text,
+        origin: ai.origin === 'translated' ? 'translated' : 'ai-edited',
+        authorId: user.id,
+      };
+    }
+    return p;
+  });
+  let headId = target.headId;
+  if (changed) {
+    const c = await writeCommit({
+      doc,
+      branch: target,
+      authorId: user.id,
+      message: `Apply ${changed} AI change${changed > 1 ? 's' : ''} from pull request #${pr.number}`,
+      paragraphs: cleanParagraphs(merged),
+      parents: [target.headId, pr.headId],
+    });
+    headId = c.id;
+    target.headId = headId;
+  }
+  Object.assign(pr, {
+    status: changed ? 'merged' : 'closed',
+    mergedAt: new Date().toISOString(),
+    mergedBy: user.id,
+    mergeMode: 'reviewed AI proposal',
+    mergeCommitId: changed ? headId : null,
+    approvals: [user.id],
+    acceptedCount: changed,
+  });
+  touch(doc, user.id);
+  persist();
+  return prView(pr, user);
 }
 
 export const pulls = {
@@ -66,7 +126,7 @@ export const pulls = {
     const user = requireUser();
     const doc = requireDoc(docId, user);
     return db.pullRequests
-      .filter((p) => p.docId === doc.id)
+      .filter((p) => p.docId === doc.id && (p.kind !== 'ai' || p.aiRequestedBy === user.id))
       .sort((a, b) => b.number - a.number)
       .map((p) => prView(p, user));
   },
@@ -137,7 +197,13 @@ export const pulls = {
     const { pr, doc } = requirePr(prId, user);
     if (roleIn(doc, user.id) === 'viewer') fail('Viewers can’t comment.', 403);
     if (!body?.trim()) fail('Write a comment first.');
-    pr.comments.push({ id: uid('cm'), authorId: user.id, paragraphId: paragraphId || null, body: body.trim().slice(0, 2000), createdAt: new Date().toISOString() });
+    pr.comments.push({
+      id: uid('cm'),
+      authorId: user.id,
+      paragraphId: paragraphId || null,
+      body: body.trim().slice(0, 2000),
+      createdAt: new Date().toISOString(),
+    });
     touch(doc, user.id);
     persist();
     return prView(pr, user);
@@ -149,7 +215,7 @@ export const pulls = {
     const { pr, doc } = requirePr(prId, user);
     const role = roleIn(doc, user.id);
     if (!['owner', 'member', 'reviewer'].includes(role)) fail('Your role can’t approve pull requests.', 403);
-    if (pr.authorId === user.id || pr.aiRequestedBy === user.id) fail('Someone other than the author has to approve this.', 403);
+    if (pr.authorId === user.id) fail('Someone other than the author has to approve this.', 403);
     if (pr.status !== 'open') fail('This pull request is already closed.');
     if (!pr.approvals.includes(user.id)) pr.approvals.push(user.id);
     if (CONTRIBUTION_TYPES.includes(confirmedType)) pr.confirmedType = confirmedType;
@@ -158,11 +224,12 @@ export const pulls = {
     return prView(pr, user);
   },
 
-  async merge(prId, { resolutions } = {}) {
+  async merge(prId, { resolutions, selections } = {}) {
     await delay(400);
     const user = requireUser();
     const { pr, doc } = requirePr(prId, user);
     if (pr.status !== 'open') fail('This pull request is already closed.');
+    if (pr.kind === 'ai') return mergeAiProposal(pr, doc, user, selections || {});
     if (!['owner', 'member', 'reviewer'].includes(roleIn(doc, user.id))) fail('Your role can’t merge.', 403);
     if (!pr.approvals.some((id) => id !== pr.authorId && id !== pr.aiRequestedBy)) {
       fail('Merging needs an approval from someone other than the author.', 403);
@@ -182,7 +249,8 @@ export const pulls = {
       let merged = plan.paragraphs;
       if (plan.mode === 'conflicts') {
         const missing = plan.conflicts.filter((c) => !(resolutions && c.id in resolutions));
-        if (missing.length) fail(`Resolve ${missing.length} conflicting paragraph${missing.length > 1 ? 's' : ''} before merging.`, 409);
+        if (missing.length)
+          fail(`Resolve ${missing.length} conflicting paragraph${missing.length > 1 ? 's' : ''} before merging.`, 409);
         merged = applyResolutions(merged, resolutions);
       }
       const c = await writeCommit({

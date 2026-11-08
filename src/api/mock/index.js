@@ -4,6 +4,7 @@ import { currentUser, docView, requireDoc, requireUser, roleIn } from './access.
 import { branches } from './branches.js';
 import { history } from './history.js';
 import { pulls } from './pulls.js';
+import { ai } from './ai.js';
 
 const auth = {
   async me() {
@@ -93,4 +94,4 @@ const docs = {
   },
 };
 
-export const mock = { auth, docs, branches, history, pulls };
+export const mock = { auth, docs, branches, history, pulls, ai };

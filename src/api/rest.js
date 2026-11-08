@@ -37,4 +37,8 @@ export const rest = {
     close: (prId) => http(`/pulls/${prId}/close`, { method: 'POST' }),
     branchStatus: (branchId) => http(`/branches/${branchId}/status`),
   },
+  ai: {
+    request: (docId, body) => http(`/documents/${docId}/ai/jobs`, { method: 'POST', body }),
+    jobs: (docId) => http(`/documents/${docId}/ai/jobs`),
+  },
 };

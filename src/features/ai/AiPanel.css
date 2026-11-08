@@ -1,0 +1,59 @@
+.ai {
+  padding-top: 0.75rem;
+  border-top: 3px solid var(--origin-ai);
+}
+.ai-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+.ai-actions .btn {
+  padding: 0.3em 0.65em;
+}
+.ai-paras {
+  border: 0;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.ai-paras label {
+  display: flex;
+  gap: 0.45rem;
+  align-items: baseline;
+  font-family: var(--serif);
+}
+.ai > .btn {
+  width: 100%;
+  justify-content: center;
+}
+.ai-jobs {
+  list-style: none;
+  padding: 0;
+  margin: 0.9rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+}
+.ai-jobs li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-left: 0.5rem;
+  border-left: 2px solid var(--rule-strong);
+}
+.ai-jobs li.is-running,
+.ai-jobs li.is-queued {
+  border-left-color: var(--origin-ai);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.ai-jobs li.is-done {
+  border-left-color: var(--origin-ai);
+}
+@keyframes pulse {
+  50% {
+    border-left-color: transparent;
+  }
+}

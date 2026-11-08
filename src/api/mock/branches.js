@@ -11,7 +11,7 @@ export function isVisible(branch, user) {
     branch.kind === 'main' ||
     branch.ownerId === user.id ||
     branch.invited.includes(user.id) ||
-    db.pullRequests.some((pr) => pr.sourceBranchId === branch.id && pr.status === 'open')
+    db.pullRequests.some((pr) => pr.sourceBranchId === branch.id && pr.status === 'open' && pr.kind !== 'ai')
   );
 }
 

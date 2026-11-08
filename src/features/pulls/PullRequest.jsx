@@ -4,6 +4,7 @@ import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { diffStats, paragraphDiff } from '../../lib/diff.js';
 import { formatDate } from '../../lib/format.js';
 import DiffView from './DiffView.jsx';
+import AiReview from '../ai/AiReview.jsx';
 import {
   approvePull,
   clearPullError,
@@ -71,13 +72,19 @@ export default function PullRequest() {
     <div className="pr">
       <header className="pr-head">
         <p className="small muted">
-          <Link to=".." relative="path">Pull requests</Link> / #{pr.number}
+          <Link to=".." relative="path">
+            Pull requests
+          </Link>{' '}
+          / #{pr.number}
         </p>
         <h2>{pr.title}</h2>
         <p className="pr-meta small">
-          <span className={`pr-state is-${pr.status}`}>{pr.status === 'open' ? 'Open' : pr.status === 'merged' ? 'Merged' : 'Closed'}</span>
+          <span className={`pr-state is-${pr.status}`}>
+            {pr.status === 'open' ? 'Open' : pr.status === 'merged' ? 'Merged' : 'Closed'}
+          </span>
           <span>
-            {pr.authorName} wants to merge <code className="hash">{pr.sourceName}</code> into <code className="hash">main</code>
+            {pr.authorName} proposes <code className="hash">{pr.sourceName}</code> into{' '}
+            <code className="hash">{pr.targetName}</code>
           </span>
           <span className="tag">{contributionTypes[pr.confirmedType || pr.contributionType]}</span>
           {pr.aiInvolved && <span className="tag tag-ai">AI involved</span>}
@@ -89,11 +96,13 @@ export default function PullRequest() {
         <section className="pr-diff">
           <div className="pr-diff-bar small">
             <span>
-              <span className="ins-count">+{stats.added} words</span> <span className="del-count">−{stats.removed} words</span>
+              <span className="ins-count">+{stats.added} words</span>{' '}
+              <span className="del-count">−{stats.removed} words</span>
               {stats.moved > 0 && <span> {stats.moved} moved</span>}
             </span>
             <label>
-              <input type="checkbox" checked={showUnchanged} onChange={(e) => setShowUnchanged(e.target.checked)} /> Show unchanged paragraphs
+              <input type="checkbox" checked={showUnchanged} onChange={(e) => setShowUnchanged(e.target.checked)} />{' '}
+              Show unchanged paragraphs
             </label>
           </div>
           <div className="sheet pr-sheet">
@@ -120,7 +129,9 @@ export default function PullRequest() {
             {canReview && pr.status === 'open' && (
               <form onSubmit={submitComment}>
                 <label className="field">
-                  {commentOn && commentOn !== '_' ? 'Comment on the selected paragraph' : 'Comment on the whole pull request'}
+                  {commentOn && commentOn !== '_'
+                    ? 'Comment on the selected paragraph'
+                    : 'Comment on the whole pull request'}
                   <textarea rows={3} value={body} onChange={(e) => setBody(e.target.value)} />
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -139,41 +150,53 @@ export default function PullRequest() {
         </section>
 
         <aside className="pr-side">
-          <section>
-            <h3>Review</h3>
-            {approved ? (
-              <p className="small">Approved by {pr.approvalNames.join(', ')}.</p>
-            ) : (
-              <p className="small muted">Needs approval from someone other than the author.</p>
-            )}
-            {canApprove && (
-              <>
-                <label className="field">
-                  Confirm the contribution type
-                  <select value={type} onChange={(e) => setConfirmType(e.target.value)}>
-                    {Object.entries(contributionTypes).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button className="btn" disabled={busy} onClick={() => dispatch(approvePull({ prId, confirmedType: type }))}>
-                  Approve
-                </button>
-              </>
-            )}
-            {pr.isAuthor && pr.status === 'open' && !approved && (
-              <p className="small muted">You opened this, so you can&rsquo;t approve it yourself.</p>
-            )}
-          </section>
+          {pr.kind === 'ai' && <AiReview pr={pr} rows={rows} onDone={() => dispatch(fetchPull(prId))} />}
 
-          {pr.status === 'open' && plan && (
+          {pr.kind !== 'ai' && (
+            <section>
+              <h3>Review</h3>
+              {approved ? (
+                <p className="small">Approved by {pr.approvalNames.join(', ')}.</p>
+              ) : (
+                <p className="small muted">Needs approval from someone other than the author.</p>
+              )}
+              {canApprove && (
+                <>
+                  <label className="field">
+                    Confirm the contribution type
+                    <select value={type} onChange={(e) => setConfirmType(e.target.value)}>
+                      {Object.entries(contributionTypes).map(([k, v]) => (
+                        <option key={k} value={k}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    className="btn"
+                    disabled={busy}
+                    onClick={() => dispatch(approvePull({ prId, confirmedType: type }))}
+                  >
+                    Approve
+                  </button>
+                </>
+              )}
+              {pr.isAuthor && pr.status === 'open' && !approved && (
+                <p className="small muted">You opened this, so you can&rsquo;t approve it yourself.</p>
+              )}
+            </section>
+          )}
+
+          {pr.kind !== 'ai' && pr.status === 'open' && plan && (
             <section>
               <h3>Merge</h3>
               <p className="small">{modeText[plan.mode]}</p>
               {plan.mode === 'conflicts' ? (
-                <Link to="conflicts" className={`btn btn-primary ${approved ? '' : 'is-disabled'}`} aria-disabled={!approved}>
+                <Link
+                  to="conflicts"
+                  className={`btn btn-primary ${approved ? '' : 'is-disabled'}`}
+                  aria-disabled={!approved}
+                >
                   Resolve {plan.conflicts.length} conflict{plan.conflicts.length > 1 ? 's' : ''}
                 </Link>
               ) : (
@@ -187,7 +210,7 @@ export default function PullRequest() {
             </section>
           )}
 
-          {pr.status === 'merged' && (
+          {pr.kind !== 'ai' && pr.status === 'merged' && (
             <section>
               <h3>Merged</h3>
               <p className="small">
@@ -199,9 +222,13 @@ export default function PullRequest() {
             </section>
           )}
 
-          {error && <p className="field-error" role="alert">{error}</p>}
+          {error && (
+            <p className="field-error" role="alert">
+              {error}
+            </p>
+          )}
 
-          {pr.status === 'open' && (pr.isAuthor || myRole === 'owner') && (
+          {pr.status === 'open' && (pr.isAuthor || pr.isRequester || myRole === 'owner') && (
             <button className="btn btn-quiet btn-danger" disabled={busy} onClick={() => dispatch(closePull(prId))}>
               Close without merging
             </button>

@@ -5,6 +5,7 @@ import { shortHash } from '../../lib/hash.js';
 import { timeAgo } from '../../lib/format.js';
 import Editor from '../editor/Editor.jsx';
 import ProvenanceLegend from '../editor/ProvenanceLegend.jsx';
+import AiPanel from '../ai/AiPanel.jsx';
 import { fromDoc, sameContent, wordCount } from '../editor/paragraphs.js';
 import { clearBranchError, fetchBranches, openBranch, saveCommit } from './branchesSlice.js';
 import './Draft.css';
@@ -158,6 +159,9 @@ export default function Draft() {
               </p>
             )}
           </form>
+        )}
+        {loaded?.branch.canEdit && loaded.branch.isMine && (
+          <AiPanel docId={doc.id} branch={loaded.branch} paragraphs={base.filter((p) => p.text.trim())} dirty={dirty} />
         )}
         <div>
           <h2 className="rail-title">Margin colours</h2>
