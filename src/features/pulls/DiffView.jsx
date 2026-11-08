@@ -8,9 +8,9 @@ const statusLabel = {
   moved: 'Moved',
 };
 
-export default function DiffView({ rows, showUnchanged, commentsByPara = {}, onComment }) {
+export default function DiffView({ rows, mode = 'words', showUnchanged, commentsByPara = {}, onComment }) {
   return (
-    <div className="diff">
+    <div className={`diff is-by-${mode}`}>
       {rows.map((r) => {
         if (r.status === 'same' && !showUnchanged) return null;
         const para = r.after || r.before;

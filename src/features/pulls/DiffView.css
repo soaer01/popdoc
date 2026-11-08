@@ -61,6 +61,38 @@
   background: var(--del-soft);
   color: var(--del);
 }
+/* Whole-paragraph mode: the old version above, the new one below */
+.is-by-paragraphs .diff-para del,
+.is-by-paragraphs .diff-para ins {
+  display: block;
+  padding: 0.15rem 0.35rem;
+}
+.is-by-paragraphs .diff-para del {
+  margin-bottom: 0.4rem;
+}
+.diff-modes {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+.diff-modes .muted {
+  margin-right: 0.25rem;
+}
+.diff-modes button {
+  font: inherit;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--graphite);
+  cursor: pointer;
+}
+.diff-modes button.is-chosen {
+  border-color: var(--carbon);
+  background: var(--carbon-soft);
+  color: var(--ink);
+}
 .diff-notes {
   display: grid;
   align-content: start;

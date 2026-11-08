@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/index.js';
 import { formatDate } from '../../lib/format.js';
 import { shortHash } from '../../lib/hash.js';
 import { verifyCommits } from '../../lib/verify.js';
+import { diffStats, paragraphDiff } from '../../lib/diff.js';
+import DiffView from '../pulls/DiffView.jsx';
+import { DiffModePicker, useDiffMode } from '../pulls/DiffMode.jsx';
 import { fetchBranches, restoreCommit } from '../branches/branchesSlice.js';
 import { originNames } from '../editor/ProvenanceLegend.jsx';
 import './History.css';
@@ -23,6 +26,29 @@ export default function History() {
   const [verified, setVerified] = useState({});
   const [selected, setSelected] = useState(null);
   const [message, setMessage] = useState(null);
+  const [view, setView] = useState('changes'); // 'changes' | 'text'
+  const [mode, setMode] = useDiffMode();
+  const [parent, setParent] = useState(null); // { id, paragraphs } of the selected commit's first parent
+
+  // A save point's changes are shown against its first parent (for a merge, the branch it merged into).
+  useEffect(() => {
+    const parentId = selected?.parents[0];
+    if (!parentId) return setParent(selected ? { id: null, paragraphs: [] } : null);
+    let live = true;
+    api.history
+      .get(parentId)
+      .then((c) => live && setParent({ id: c.id, paragraphs: c.paragraphs }))
+      .catch((e) => live && setMessage(e.message));
+    return () => {
+      live = false;
+    };
+  }, [selected]);
+
+  const rows = useMemo(
+    () => (selected && parent ? paragraphDiff(parent.paragraphs, selected.paragraphs, mode) : []),
+    [selected, parent, mode]
+  );
+  const stats = diffStats(rows);
 
   useEffect(() => {
     if (!branches) dispatch(fetchBranches(doc.id));
@@ -135,6 +161,40 @@ export default function History() {
                 </button>
               )}
             </div>
+            <div className="history-tabs small">
+              <span role="radiogroup" aria-label="Show" className="diff-modes">
+                {[
+                  ['changes', 'What changed'],
+                  ['text', 'Full text'],
+                ].map(([key, label]) => (
+                  <button key={key} type="button" role="radio" aria-checked={view === key} className={view === key ? 'is-chosen' : ''} onClick={() => setView(key)}>
+                    {label}
+                  </button>
+                ))}
+              </span>
+              {view === 'changes' && <DiffModePicker mode={mode} onChange={setMode} />}
+            </div>
+            {view === 'changes' ? (
+              <article className="sheet history-changes">
+                <p className="small muted">
+                  {parent?.id ? (
+                    <>
+                      Compared with <code className="hash">{shortHash(parent.id)}</code>
+                      {selected.parents.length > 1 && ', the version it was merged into'}.{' '}
+                      <span className="ins-count">+{stats.added} words</span>{' '}
+                      <span className="del-count">−{stats.removed} words</span>
+                    </>
+                  ) : (
+                    'The first save point. Everything in it is new.'
+                  )}
+                </p>
+                {parent && rows.every((r) => r.status === 'same') ? (
+                  <p className="muted">No text changed in this save point.</p>
+                ) : (
+                  <DiffView rows={rows} mode={mode} />
+                )}
+              </article>
+            ) : (
             <article className="sheet doc-sheet">
               {selected.paragraphs.map((p) => (
                 <p key={p.id} className={`read-para origin-${p.origin}`} title={originNames[p.origin]}>
@@ -143,6 +203,7 @@ export default function History() {
               ))}
               {selected.paragraphs.length === 0 && <p className="muted">This version is empty.</p>}
             </article>
+            )}
           </>
         )}
       </section>

@@ -4,6 +4,7 @@ import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { diffStats, paragraphDiff } from '../../lib/diff.js';
 import { formatDate } from '../../lib/format.js';
 import DiffView from './DiffView.jsx';
+import { DiffModePicker, useDiffMode } from './DiffMode.jsx';
 import AiReview from '../ai/AiReview.jsx';
 import {
   approvePull,
@@ -29,6 +30,7 @@ export default function PullRequest() {
   const { detail, status, busy, error } = useSelector((s) => s.pulls);
   const me = useSelector((s) => s.auth.user);
   const [showUnchanged, setShowUnchanged] = useState(false);
+  const [mode, setMode] = useDiffMode();
   const [commentOn, setCommentOn] = useState(null);
   const [body, setBody] = useState('');
   const [confirmType, setConfirmType] = useState(null);
@@ -39,7 +41,7 @@ export default function PullRequest() {
   }, [prId, dispatch]);
 
   const loaded = detail?.pr.id === prId ? detail : null;
-  const rows = useMemo(() => (loaded ? paragraphDiff(loaded.base, loaded.head) : []), [loaded]);
+  const rows = useMemo(() => (loaded ? paragraphDiff(loaded.base, loaded.head, mode) : []), [loaded, mode]);
 
   if (!loaded) return <p className="empty">{status === 'error' ? error : 'Loading pull request…'}</p>;
 
@@ -100,6 +102,7 @@ export default function PullRequest() {
               <span className="del-count">−{stats.removed} words</span>
               {stats.moved > 0 && <span> {stats.moved} moved</span>}
             </span>
+            <DiffModePicker mode={mode} onChange={setMode} />
             <label>
               <input type="checkbox" checked={showUnchanged} onChange={(e) => setShowUnchanged(e.target.checked)} />{' '}
               Show unchanged paragraphs
@@ -111,6 +114,7 @@ export default function PullRequest() {
             ) : (
               <DiffView
                 rows={rows}
+                mode={mode}
                 showUnchanged={showUnchanged}
                 commentsByPara={commentsByPara}
                 onComment={canReview && pr.status === 'open' ? setCommentOn : null}

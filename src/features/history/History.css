@@ -103,6 +103,19 @@
   background: var(--carbon-soft);
   border-radius: var(--radius-sm);
 }
+.history-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+.history-changes {
+  padding: 1rem clamp(1rem, 3vw, 2rem);
+}
+.history-changes .diff-row {
+  grid-template-columns: 1fr;
+}
 .read-para {
   font-family: var(--serif);
   font-size: 1.1875rem;

@@ -1,8 +1,17 @@
-// Paragraph-aware word diff.
-// Paragraphs are matched by id; changed paragraphs get a Myers word diff (jsdiff's diffWords).
+// Paragraph-aware diff.
+// Paragraphs are matched by id; changed paragraphs are compared word by word (Myers, jsdiff's
+// diffWords), sentence by sentence, or as whole paragraphs, depending on the chosen mode.
 // Paragraphs present in both versions but out of order relative to the longest common
 // subsequence are reported as moved.
-import { diffWords } from 'diff';
+import { diffSentences, diffWords } from 'diff';
+
+export const DIFF_MODES = { words: 'Words', sentences: 'Sentences', paragraphs: 'Paragraphs' };
+
+function textParts(before, after, mode) {
+  if (mode === 'sentences') return diffSentences(before, after);
+  if (mode === 'paragraphs') return [{ removed: true, value: before }, { added: true, value: after }];
+  return diffWords(before, after);
+}
 
 function lcs(a, b) {
   const dp = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
@@ -25,7 +34,7 @@ function lcs(a, b) {
   return keep;
 }
 
-export function paragraphDiff(base = [], head = []) {
+export function paragraphDiff(base = [], head = [], mode = 'words') {
   const baseById = new Map(base.map((p) => [p.id, p]));
   const headById = new Map(head.map((p) => [p.id, p]));
   const common = base.map((p) => p.id).filter((id) => headById.has(id));
@@ -41,7 +50,7 @@ export function paragraphDiff(base = [], head = []) {
     if (before.text === after.text) {
       return { id: after.id, status: moved ? 'moved' : 'same', before, after };
     }
-    return { id: after.id, status: 'changed', moved, before, after, parts: diffWords(before.text, after.text) };
+    return { id: after.id, status: 'changed', moved, before, after, parts: textParts(before.text, after.text, mode) };
   });
 
   // Put each removed paragraph back after its nearest surviving predecessor from the base.
@@ -69,7 +78,8 @@ export function diffStats(rows) {
     if (r.status === 'added') added += words(r.after.text);
     if (r.status === 'removed') removed += words(r.before.text);
     if (r.status === 'changed') {
-      for (const part of r.parts) {
+      // Counts are always in words, whichever mode the diff is shown in.
+      for (const part of diffWords(r.before.text, r.after.text)) {
         if (part.added) added += words(part.value);
         if (part.removed) removed += words(part.value);
       }
