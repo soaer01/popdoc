@@ -71,8 +71,25 @@ export async function buildSeed() {
     parents: [c2.id],
     authorId: 'u_afzal',
     message: 'Propose the core argument',
-    paragraphs: [p1, p2, p3],
+    paragraphs: [
+      { ...p1, text: 'Most students now write with an AI tool open in another tab, yet no tool records how a piece of group work was actually produced.' },
+      p2,
+      p3,
+    ],
     createdAt: ago(0, 5),
+  });
+  // Safee rewords the same opening paragraph on her branch, so PR #3 conflicts once PR #2 merges.
+  const cSafee2 = await commit({
+    docId: 'd_1',
+    branchId: 'b_safee',
+    parents: [c2.id],
+    authorId: 'u_safee',
+    message: 'Sharpen the opening sentence',
+    paragraphs: [
+      { ...p1, text: 'Most students now draft with an AI tool open beside them. No common tool records how group work was actually produced.', authorId: 'u_safee' },
+      p2,
+    ],
+    createdAt: ago(4),
   });
 
   // JSON-safe: drop undefined fields
@@ -88,7 +105,7 @@ export async function buildSeed() {
         ownerId: 'u_afzal',
         members: [
           { userId: 'u_afzal', role: 'owner', lastActiveAt: ago(0, 5) },
-          { userId: 'u_safee', role: 'member', lastActiveAt: ago(5, 3) },
+          { userId: 'u_safee', role: 'member', lastActiveAt: ago(4) },
           { userId: 'u_reviewer', role: 'reviewer', lastActiveAt: ago(5) },
         ],
         round: 'open',
@@ -113,10 +130,10 @@ export async function buildSeed() {
     branches: [
       { id: 'b_main', docId: 'd_1', name: 'main', kind: 'main', ownerId: null, headId: c2.id, invited: [] },
       { id: 'b_afzal', docId: 'd_1', name: 'afzal/draft', kind: 'member', ownerId: 'u_afzal', headId: cAfzal.id, invited: [] },
-      { id: 'b_safee', docId: 'd_1', name: 'safee/draft', kind: 'member', ownerId: 'u_safee', headId: cSafee.id, invited: [] },
+      { id: 'b_safee', docId: 'd_1', name: 'safee/draft', kind: 'member', ownerId: 'u_safee', headId: cSafee2.id, invited: [] },
       { id: 'b_d2_main', docId: 'd_2', name: 'main', kind: 'main', ownerId: null, headId: null, invited: [] },
     ],
-    commits: [c1, cSafee, c2, cAfzal],
+    commits: [c1, cSafee, c2, cAfzal, cSafee2],
     pullRequests: [
       {
         id: 'pr_1',
@@ -165,6 +182,25 @@ export async function buildSeed() {
           },
         ],
         createdAt: ago(0, 4),
+      },
+      {
+        id: 'pr_3',
+        number: 3,
+        docId: 'd_1',
+        sourceBranchId: 'b_safee',
+        targetBranchId: 'b_main',
+        authorId: 'u_safee',
+        title: 'Tighter opening sentence',
+        description: 'Two short sentences read better than one long one.',
+        contributionType: 'wording',
+        confirmedType: 'wording',
+        aiInvolved: false,
+        status: 'open',
+        baseId: c2.id,
+        headId: cSafee2.id,
+        approvals: ['u_reviewer'],
+        comments: [],
+        createdAt: ago(4),
       },
     ],
     aiJobs: [],

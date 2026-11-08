@@ -1,0 +1,93 @@
+.cf {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 1.5rem clamp(16px, 3vw, 32px) 6rem;
+}
+.cf header h2 {
+  font-size: var(--t-2xl);
+}
+.cf header p {
+  max-width: 68ch;
+}
+.cf-item {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--ink);
+}
+.cf-item h3 {
+  font-family: var(--sans);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+.cf-base {
+  max-width: 80ch;
+}
+.cf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.cf-version {
+  background: var(--sheet);
+  box-shadow: var(--shadow-sheet);
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--rule-strong);
+}
+.cf-version.origin-typed {
+  border-left-color: var(--rule-strong) !important;
+}
+.cf-version h4 {
+  font-family: var(--sans);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--graphite);
+  margin: 0 0 0.4rem;
+}
+.cf-version p {
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  margin: 0;
+}
+.cf-version ins {
+  background: var(--ins-soft);
+  color: var(--ins);
+  text-decoration: none;
+}
+.cf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.btn.is-chosen {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--sheet);
+}
+.cf-edit {
+  margin-top: 0.9rem;
+}
+.cf-edit textarea {
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+}
+.cf-foot {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 0.9rem 0;
+  background: var(--paper);
+  border-top: 1px solid var(--rule-strong);
+}
+@media (max-width: 720px) {
+  .cf-grid {
+    grid-template-columns: 1fr;
+  }
+}

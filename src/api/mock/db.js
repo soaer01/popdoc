@@ -2,7 +2,7 @@
 // State is kept in localStorage so a refresh doesn't wipe the demo.
 import { buildSeed } from './seed.js';
 
-const KEY = 'popdoc-mock-v2';
+const KEY = 'popdoc-mock-v3';
 
 export let db = null;
 
