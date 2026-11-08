@@ -1,0 +1,94 @@
+.record {
+  max-width: 980px;
+}
+.record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.record-sheet {
+  padding: clamp(1.25rem, 4vw, 3rem);
+}
+.record-sheet h2 {
+  font-size: var(--t-sm);
+  font-family: var(--sans);
+  font-weight: 600;
+  color: var(--graphite);
+  margin-bottom: 0.25rem;
+}
+.record-title {
+  font-family: var(--serif);
+  font-size: var(--t-2xl);
+  line-height: 1.2;
+}
+.record-facts {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0 0 2rem;
+  font-size: var(--t-sm);
+}
+.record-facts dt {
+  color: var(--graphite);
+}
+.record-facts dd {
+  margin: 0;
+  word-break: break-all;
+}
+.record-sheet h3 {
+  font-family: var(--sans);
+  font-size: var(--t-md);
+  font-weight: 600;
+  padding-top: 0.75rem;
+  border-top: 2px solid var(--ink);
+}
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-sm);
+}
+.record-table th,
+.record-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.55rem 0.6rem 0.55rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.record-table th {
+  font-weight: 500;
+  color: var(--graphite);
+}
+.record-foot {
+  margin-top: 1.5rem;
+  max-width: 70ch;
+}
+
+@media (max-width: 640px) {
+  .record-table thead {
+    display: none;
+  }
+  .record-table tr {
+    display: grid;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .record-table td {
+    border: 0;
+    padding: 0.1rem 0;
+  }
+}
+
+@media print {
+  .topbar,
+  .doc-head,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .record-sheet {
+    box-shadow: none;
+    padding: 0;
+  }
+}

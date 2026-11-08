@@ -6,6 +6,7 @@ import { timeAgo } from '../../lib/format.js';
 import Editor from '../editor/Editor.jsx';
 import ProvenanceLegend from '../editor/ProvenanceLegend.jsx';
 import AiPanel from '../ai/AiPanel.jsx';
+import { usePresence } from './usePresence.js';
 import { fromDoc, sameContent, wordCount } from '../editor/paragraphs.js';
 import { clearBranchError, fetchBranches, openBranch, saveCommit } from './branchesSlice.js';
 import './Draft.css';
@@ -32,6 +33,8 @@ export default function Draft() {
     if (!list) return null;
     return (list.find((b) => b.isMine && b.kind === 'member') || list.find((b) => b.kind === 'main'))?.id;
   }, [params, list]);
+
+  const here = usePresence(branchId, user);
 
   useEffect(() => {
     if (branchId) dispatch(openBranch(branchId));
@@ -107,6 +110,9 @@ export default function Draft() {
                 ) : (
                   'No save points yet'
                 )}
+              </span>
+              <span aria-live="polite">
+                Here now: {here.map((u) => (u.id === user.id ? 'you' : u.name)).join(', ') || 'you'}
               </span>
             </div>
             <article className="sheet doc-sheet">

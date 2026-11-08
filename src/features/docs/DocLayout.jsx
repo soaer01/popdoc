@@ -1,15 +1,22 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, Outlet, useParams } from 'react-router-dom';
-import { roleNames } from '../../lib/format.js';
 import { fetchDoc, selectDoc } from './docsSlice.js';
 import './DocLayout.css';
+
+const roleSentence = {
+  owner: 'You own this document.',
+  member: 'You’re a member of this document.',
+  reviewer: 'You’re reviewing this document.',
+  viewer: 'You can read this document.',
+};
 
 const tabs = [
   { to: '.', label: 'Draft', end: true },
   { to: 'pulls', label: 'Pull requests' },
   { to: 'history', label: 'History' },
   { to: 'ledger', label: 'Ledger' },
+  { to: 'record', label: 'Process record' },
   { to: 'members', label: 'People and rounds' },
 ];
 
@@ -31,7 +38,7 @@ export default function DocLayout() {
         <div>
           <h1>{doc.title}</h1>
           <p className="small muted">
-            You are {roleNames[doc.myRole].toLowerCase()} on this document.
+            {roleSentence[doc.myRole]}
             {doc.round === 'idea' && ' Idea round: wording edits are on hold.'}
             {doc.round === 'polish' && ' Polish round: wording edits can be merged.'}
           </p>

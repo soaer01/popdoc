@@ -2,6 +2,7 @@
 import { db, persist, delay, fail } from './db.js';
 import { requireDoc, requireUser, roleIn, userName } from './access.js';
 import { findCommit } from './branches.js';
+import { paragraphDiff } from '../../lib/diff.js';
 
 const INACTIVE_DAYS = 3;
 
@@ -13,8 +14,8 @@ function mergedIntoMain(doc) {
 
 // AI involvement for a main PR: declared by the author, or any merged paragraph with an AI origin.
 function aiInvolvement(pr) {
-  const head = findCommit(pr.headId);
-  const origins = new Set((head?.paragraphs || []).filter((p) => p.authorId === pr.authorId || p.origin !== 'typed').map((p) => p.origin));
+  const rows = paragraphDiff(findCommit(pr.baseId)?.paragraphs, findCommit(pr.headId)?.paragraphs);
+  const origins = new Set(rows.filter((r) => r.status === 'added' || r.status === 'changed').map((r) => r.after.origin));
   if (origins.has('ai')) return 'AI text accepted';
   if (origins.has('ai-edited')) return 'AI text, edited by a person';
   if (origins.has('translated')) return 'AI translation of own draft';
