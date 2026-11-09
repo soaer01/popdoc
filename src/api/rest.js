@@ -22,6 +22,7 @@ export const rest = {
     ensureMine: (docId) => http(`/documents/${docId}/branches/mine`, { method: 'PUT' }),
     open: (branchId) => http(`/branches/${branchId}`),
     commit: (branchId, body) => http(`/branches/${branchId}/commits`, { method: 'POST', body }),
+    updateFromMain: (branchId, body) => http(`/branches/${branchId}/update-from-main`, { method: 'POST', body }),
   },
   history: {
     list: (branchId, { cursor = 0, limit = 15 } = {}) =>

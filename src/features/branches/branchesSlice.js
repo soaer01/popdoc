@@ -14,6 +14,10 @@ export const saveCommit = createAsyncThunk('branches/commit', ({ branchId, ...bo
   api.branches.commit(branchId, body)
 );
 
+export const updateFromMain = createAsyncThunk('branches/updateFromMain', ({ branchId, ...body }) =>
+  api.branches.updateFromMain(branchId, body)
+);
+
 export const restoreCommit = createAsyncThunk('branches/restore', ({ branchId, ...body }) =>
   api.history.restore(branchId, body)
 );
@@ -22,7 +26,8 @@ const branchesSlice = createSlice({
   name: 'branches',
   initialState: {
     byDoc: {},
-    open: null, // { branch, head }
+    open: null, // { branch, head, behindMain }
+    syncConflicts: null, // paragraphs changed both on this branch and on main, waiting for a choice
     status: 'idle',
     saving: false,
     error: null,
@@ -46,6 +51,21 @@ const branchesSlice = createSlice({
       .addCase(openBranch.fulfilled, (s, a) => {
         s.status = 'ready';
         s.open = a.payload;
+        s.syncConflicts = null;
+      })
+      .addCase(updateFromMain.pending, (s) => {
+        s.saving = true;
+        s.error = null;
+      })
+      .addCase(updateFromMain.fulfilled, (s, a) => {
+        s.saving = false;
+        const { conflicts, ...payload } = a.payload;
+        s.open = payload;
+        s.syncConflicts = conflicts || null;
+      })
+      .addCase(updateFromMain.rejected, (s, a) => {
+        s.saving = false;
+        s.error = a.error.message;
       })
       .addCase(openBranch.rejected, (s, a) => {
         s.status = 'error';

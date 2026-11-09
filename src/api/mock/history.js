@@ -1,7 +1,7 @@
 // Commit history. History is append-only: restoring an old version writes a new commit.
 import { db, persist, delay, fail } from './db.js';
 import { requireDoc, requireUser, touch, userName } from './access.js';
-import { branchView, findCommit, isVisible, writeCommit } from './branches.js';
+import { branchPayload, branchView, findCommit, isVisible, writeCommit } from './branches.js';
 
 function ancestors(headId) {
   const out = [];
@@ -72,6 +72,6 @@ export const history = {
     branch.headId = c.id;
     touch(doc, user.id);
     persist();
-    return { branch: branchView(branch, doc, user), head: c };
+    return branchPayload(branch, doc, user);
   },
 };

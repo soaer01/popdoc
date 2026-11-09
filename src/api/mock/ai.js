@@ -2,8 +2,7 @@
 // opens an AI-labelled pull request into the requester's draft branch. It never touches main.
 import { db, persist, delay, uid, fail } from './db.js';
 import { canWrite, requireDoc, requireUser, userName } from './access.js';
-import { findCommit, writeCommit } from './branches.js';
-import { mergeBase } from './pulls.js';
+import { findCommit, mergeBase, writeCommit } from './branches.js';
 import { transform } from './llm.js';
 
 export const AI_USER = { id: 'u_ai', name: 'AI assistant' };

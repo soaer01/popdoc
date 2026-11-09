@@ -7,9 +7,10 @@ import Editor from '../editor/Editor.jsx';
 import ProvenanceLegend from '../editor/ProvenanceLegend.jsx';
 import AiPanel from '../ai/AiPanel.jsx';
 import NewBranch from './NewBranch.jsx';
+import SyncConflicts from './SyncConflicts.jsx';
 import { usePresence } from './usePresence.js';
 import { fromDoc, sameContent, wordCount } from '../editor/paragraphs.js';
-import { clearBranchError, fetchBranches, openBranch, saveCommit } from './branchesSlice.js';
+import { clearBranchError, fetchBranches, openBranch, saveCommit, updateFromMain } from './branchesSlice.js';
 import './Draft.css';
 
 export default function Draft() {
@@ -17,7 +18,7 @@ export default function Draft() {
   const dispatch = useDispatch();
   const user = useSelector((s) => s.auth.user);
   const list = useSelector((s) => s.branches.byDoc[doc.id]);
-  const { open, status, saving, error } = useSelector((s) => s.branches);
+  const { open, status, saving, error, syncConflicts } = useSelector((s) => s.branches);
   const [params, setParams] = useSearchParams();
   const [draft, setDraft] = useState(null);
   const [message, setMessage] = useState('');
@@ -71,6 +72,10 @@ export default function Draft() {
       })
     );
     if (!action.error) setMessage('');
+  }
+
+  function onUpdate(resolutions) {
+    dispatch(updateFromMain({ branchId, expectedHeadId: loaded.head?.id || null, resolutions }));
   }
 
   return (
@@ -141,6 +146,27 @@ export default function Draft() {
                 Here now: {here.map((u) => (u.id === user.id ? 'you' : u.name)).join(', ') || 'you'}
               </span>
             </div>
+            {loaded.branch.canEdit && loaded.behindMain && !syncConflicts && (
+              <div className="behind-main small" role="status">
+                <span>
+                  Main has changes this branch doesn&rsquo;t have yet. A branch keeps the version it started from
+                  until you bring main&rsquo;s changes in.
+                </span>
+                <button className="btn" disabled={dirty || saving} onClick={() => onUpdate()}>
+                  {saving ? 'Updating…' : 'Update from main'}
+                </button>
+                {dirty && <span className="muted">Make a save point first, then update.</span>}
+              </div>
+            )}
+            {syncConflicts && (
+              <SyncConflicts
+                key={loaded.head?.id}
+                conflicts={syncConflicts}
+                busy={saving}
+                onResolve={onUpdate}
+                onCancel={() => dispatch(openBranch(branchId))}
+              />
+            )}
             <article className="sheet doc-sheet">
               <Editor
                 key={`${branchId}:${loaded.head?.id}`}

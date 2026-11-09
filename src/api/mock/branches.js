@@ -1,6 +1,7 @@
 // Branches and commits. Branches are private by default: you see main, your own branches,
 // branches you were invited to, and any branch with an open pull request.
 import { hashCommit } from '../../lib/hash.js';
+import { applyResolutions, threeWayMerge } from '../../lib/merge.js';
 import { db, persist, delay, uid, fail } from './db.js';
 import { canWrite, requireDoc, requireUser, touch, userName } from './access.js';
 
@@ -40,6 +41,27 @@ export function reachable(headId) {
     queue.push(...(findCommit(id)?.parents || []));
   }
   return seen;
+}
+
+// Nearest common ancestor: the newest commit reachable from both heads.
+export function mergeBase(a, b) {
+  const fromB = reachable(b);
+  return (
+    [...reachable(a)]
+      .map(findCommit)
+      .filter((c) => c && fromB.has(c.id))
+      .sort((x, y) => y.createdAt.localeCompare(x.createdAt))[0]?.id || null
+  );
+}
+
+// What the draft screen gets for a branch: the branch, its head, and whether main has moved on.
+export function branchPayload(branch, doc, user) {
+  const main = db.branches.find((b) => b.id === doc.mainBranchId);
+  return {
+    branch: branchView(branch, doc, user),
+    head: findCommit(branch.headId),
+    behindMain: branch.kind === 'member' && Boolean(main.headId) && !reachable(branch.headId).has(main.headId),
+  };
 }
 
 const slug = (s) =>
@@ -145,7 +167,49 @@ export const branches = {
     if (!branch) fail('That branch no longer exists.', 404);
     const doc = requireDoc(branch.docId, user);
     if (!isVisible(branch, user)) fail('This branch is private to its owner.', 403);
-    return { branch: branchView(branch, doc, user), head: findCommit(branch.headId) };
+    return branchPayload(branch, doc, user);
+  },
+
+  // Bring main's newer changes into a branch. Fast-forwards if the branch has no saves of its own,
+  // otherwise writes a merge save point. Paragraphs changed on both sides come back as conflicts
+  // until the caller sends a resolution for each: { [paragraphId]: 'mine' | 'main' }.
+  async updateFromMain(branchId, { expectedHeadId, resolutions } = {}) {
+    await delay(300);
+    const user = requireUser();
+    const branch = db.branches.find((b) => b.id === branchId);
+    if (!branch) fail('That branch no longer exists.', 404);
+    const doc = requireDoc(branch.docId, user);
+    if (!branchView(branch, doc, user).canEdit) fail('You can’t update this branch.', 403);
+    if (branch.headId !== expectedHeadId) fail('This branch changed since you opened it. Reload it first.', 409);
+    const main = db.branches.find((b) => b.id === doc.mainBranchId);
+    if (!main.headId || reachable(branch.headId).has(main.headId)) return branchPayload(branch, doc, user);
+
+    if (!branch.headId || reachable(main.headId).has(branch.headId)) {
+      branch.headId = main.headId;
+    } else {
+      const base = findCommit(mergeBase(branch.headId, main.headId))?.paragraphs || [];
+      const mine = findCommit(branch.headId).paragraphs;
+      const theirs = findCommit(main.headId).paragraphs;
+      let { paragraphs, conflicts } = threeWayMerge(base, mine, theirs);
+      if (conflicts.length) {
+        const missing = conflicts.filter((c) => !['mine', 'main'].includes(resolutions?.[c.id]));
+        if (missing.length) return { ...branchPayload(branch, doc, user), conflicts };
+        const chosen = Object.fromEntries(conflicts.map((c) => [c.id, resolutions[c.id] === 'mine' ? c.current : c.incoming]));
+        paragraphs = applyResolutions(paragraphs, chosen);
+      }
+      const c = await writeCommit({
+        doc,
+        branch,
+        authorId: user.id,
+        message: 'Update from main',
+        paragraphs: cleanParagraphs(paragraphs),
+        parents: [branch.headId, main.headId],
+      });
+      branch.headId = c.id;
+    }
+    touch(doc, user.id);
+    persist();
+    return branchPayload(branch, doc, user);
   },
 
   // Compare-and-set on the branch head: if someone else saved first, the client must reload.
@@ -170,6 +234,6 @@ export const branches = {
     branch.headId = c.id;
     touch(doc, user.id);
     persist();
-    return { branch: branchView(branch, doc, user), head: c };
+    return branchPayload(branch, doc, user);
   },
 };

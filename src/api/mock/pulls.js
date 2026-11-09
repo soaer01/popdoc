@@ -2,32 +2,9 @@
 import { applyResolutions, threeWayMerge } from '../../lib/merge.js';
 import { db, persist, delay, uid, fail } from './db.js';
 import { canWrite, requireDoc, requireUser, roleIn, touch, userName } from './access.js';
-import { findCommit, isVisible, writeCommit, cleanParagraphs } from './branches.js';
+import { findCommit, isVisible, writeCommit, cleanParagraphs, mergeBase, reachable as ancestorIds } from './branches.js';
 
 export const CONTRIBUTION_TYPES = ['idea', 'evidence', 'structure', 'wording'];
-
-function ancestorIds(id) {
-  const seen = new Set();
-  const queue = id ? [id] : [];
-  while (queue.length) {
-    const x = queue.shift();
-    if (seen.has(x)) continue;
-    seen.add(x);
-    queue.push(...(findCommit(x)?.parents || []));
-  }
-  return seen;
-}
-
-// Nearest common ancestor: the newest commit reachable from both heads.
-export function mergeBase(a, b) {
-  const fromB = ancestorIds(b);
-  return (
-    [...ancestorIds(a)]
-      .map(findCommit)
-      .filter((c) => c && fromB.has(c.id))
-      .sort((x, y) => y.createdAt.localeCompare(x.createdAt))[0]?.id || null
-  );
-}
 
 const paras = (commitId) => findCommit(commitId)?.paragraphs || [];
 
