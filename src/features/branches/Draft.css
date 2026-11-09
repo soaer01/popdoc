@@ -43,6 +43,28 @@
 .rail-note {
   margin: 0;
 }
+.new-branch-btn {
+  margin-bottom: 1rem;
+}
+.new-branch {
+  margin-bottom: 1rem;
+}
+.new-branch-name {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  font-family: var(--mono);
+  font-size: var(--t-sm);
+}
+.new-branch-name input {
+  flex: 1;
+  min-width: 0;
+}
+.new-branch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 
 .sheet-wrap {
   min-width: 0;

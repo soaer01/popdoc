@@ -18,6 +18,7 @@ export const rest = {
   },
   branches: {
     list: (docId) => http(`/documents/${docId}/branches`),
+    create: (docId, body) => http(`/documents/${docId}/branches`, { method: 'POST', body }),
     ensureMine: (docId) => http(`/documents/${docId}/branches/mine`, { method: 'PUT' }),
     open: (branchId) => http(`/branches/${branchId}`),
     commit: (branchId, body) => http(`/branches/${branchId}/commits`, { method: 'POST', body }),

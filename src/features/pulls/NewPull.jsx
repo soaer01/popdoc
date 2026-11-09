@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/index.js';
 import { fetchBranches } from '../branches/branchesSlice.js';
 import { contributionTypes, openPull } from './pullsSlice.js';
@@ -17,7 +17,9 @@ export default function NewPull() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const branches = useSelector((s) => s.branches.byDoc[doc.id]);
-  const mine = branches?.find((b) => b.isMine && b.kind === 'member');
+  const [params, setParams] = useSearchParams();
+  const myBranches = (branches || []).filter((b) => b.isMine && b.kind === 'member');
+  const mine = myBranches.find((b) => b.id === params.get('branch')) || myBranches[0];
   const [status, setStatus] = useState(null);
   const [form, setForm] = useState({ title: '', description: '', contributionType: 'idea', aiInvolved: false });
   const [error, setError] = useState(null);
@@ -27,6 +29,8 @@ export default function NewPull() {
   }, [branches, doc.id, dispatch]);
 
   useEffect(() => {
+    setStatus(null);
+    setError(null);
     if (mine) api.pulls.branchStatus(mine.id).then(setStatus).catch((e) => setError(e.message));
   }, [mine]);
 
@@ -40,20 +44,37 @@ export default function NewPull() {
   }
 
   if (!mine) return <p className="empty">Only owners and members have a draft branch to propose from.</p>;
+  const picker = myBranches.length > 1 && (
+    <label className="field" style={{ maxWidth: 320 }}>
+      Branch to propose
+      <select value={mine.id} onChange={(e) => setParams({ branch: e.target.value })}>
+        {myBranches.map((b) => (
+          <option key={b.id} value={b.id}>
+            {b.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
   if (status?.openPr) {
     return (
-      <p className="empty">
-        Your branch already has an open pull request.{' '}
-        <button className="btn" onClick={() => navigate(`../${status.openPr}`, { relative: 'path' })}>
-          Go to it
-        </button>
-      </p>
+      <section className="doc-page">
+        {picker}
+        <p>
+          <code className="hash">{mine.name}</code> already has an open pull request.{' '}
+          <button className="btn" onClick={() => navigate(`../${status.openPr}`, { relative: 'path' })}>
+            Go to it
+          </button>
+        </p>
+      </section>
     );
   }
 
   return (
     <section className="doc-page">
       <h2>Propose your draft for the shared document</h2>
+      {picker}
       <p className="muted">
         From <code className="hash">{mine.name}</code> into <code className="hash">main</code>.{' '}
         {status && !status.hasChanges && 'Your branch has no saved changes compared with main yet.'}

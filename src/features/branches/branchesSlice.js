@@ -6,6 +6,8 @@ export const fetchBranches = createAsyncThunk('branches/list', async (docId) => 
   return { docId, list: await api.branches.list(docId) };
 });
 
+export const createBranch = createAsyncThunk('branches/create', ({ docId, ...body }) => api.branches.create(docId, body));
+
 export const openBranch = createAsyncThunk('branches/open', (branchId) => api.branches.open(branchId));
 
 export const saveCommit = createAsyncThunk('branches/commit', ({ branchId, ...body }) =>
@@ -34,6 +36,9 @@ const branchesSlice = createSlice({
     b.addCase(fetchBranches.fulfilled, (s, a) => {
       s.byDoc[a.payload.docId] = a.payload.list;
     })
+      .addCase(createBranch.fulfilled, (s, a) => {
+        (s.byDoc[a.payload.docId] ||= []).push(a.payload);
+      })
       .addCase(openBranch.pending, (s) => {
         s.status = 'loading';
         s.error = null;

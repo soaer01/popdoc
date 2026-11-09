@@ -6,6 +6,7 @@ import { timeAgo } from '../../lib/format.js';
 import Editor from '../editor/Editor.jsx';
 import ProvenanceLegend from '../editor/ProvenanceLegend.jsx';
 import AiPanel from '../ai/AiPanel.jsx';
+import NewBranch from './NewBranch.jsx';
 import { usePresence } from './usePresence.js';
 import { fromDoc, sameContent, wordCount } from '../editor/paragraphs.js';
 import { clearBranchError, fetchBranches, openBranch, saveCommit } from './branchesSlice.js';
@@ -21,6 +22,7 @@ export default function Draft() {
   const [draft, setDraft] = useState(null);
   const [message, setMessage] = useState('');
   const [pasteNote, setPasteNote] = useState(false);
+  const [branching, setBranching] = useState(false);
   const draftRef = useRef(null);
 
   useEffect(() => {
@@ -91,7 +93,31 @@ export default function Draft() {
             </li>
           ))}
         </ul>
-        <p className="small muted rail-note">Other members&rsquo; drafts stay hidden until they open a pull request.</p>
+        {['owner', 'member'].includes(doc.myRole) &&
+          (branching ? (
+            <NewBranch
+              docId={doc.id}
+              starts={[
+                { label: 'main, latest save', commitId: null },
+                ...(loaded?.head && loaded.branch.kind !== 'main'
+                  ? [{ label: `${loaded.branch.name}, latest save`, commitId: loaded.head.id }]
+                  : []),
+              ]}
+              onCreated={(b) => {
+                setBranching(false);
+                setParams({ branch: b.id });
+              }}
+              onCancel={() => setBranching(false)}
+            />
+          ) : (
+            <button className="btn new-branch-btn" onClick={() => setBranching(true)}>
+              New branch
+            </button>
+          ))}
+        <p className="small muted rail-note">
+          Other members&rsquo; branches stay hidden until they open a pull request. To branch from an older save
+          point, pick it in History.
+        </p>
       </aside>
 
       <section className="sheet-wrap">
@@ -150,7 +176,7 @@ export default function Draft() {
             <button className="btn btn-primary" disabled={!dirty || saving}>
               {saving ? 'Saving…' : 'Save point'}
             </button>
-            <Link to="pulls/new" className="btn open-pr">
+            <Link to={`pulls/new?branch=${branchId}`} className="btn open-pr">
               Open pull request
             </Link>
             {pasteNote && (

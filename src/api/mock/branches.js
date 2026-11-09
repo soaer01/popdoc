@@ -29,6 +29,27 @@ export function branchView(branch, doc, user) {
 
 export const findCommit = (id) => db.commits.find((c) => c.id === id) || null;
 
+// Every commit reachable from a head, following all parents.
+export function reachable(headId) {
+  const seen = new Set();
+  const queue = headId ? [headId] : [];
+  while (queue.length) {
+    const id = queue.shift();
+    if (seen.has(id)) continue;
+    seen.add(id);
+    queue.push(...(findCommit(id)?.parents || []));
+  }
+  return seen;
+}
+
+const slug = (s) =>
+  String(s || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+
 // Server-side validation of submitted paragraphs (the backend will also sanitize rich text).
 export function cleanParagraphs(list) {
   if (!Array.isArray(list)) fail('Paragraphs must be a list.');
@@ -78,7 +99,7 @@ export const branches = {
       mine = {
         id: uid('b'),
         docId: doc.id,
-        name: `${user.name.split(' ')[0].toLowerCase()}/draft`,
+        name: `${slug(user.email.split('@')[0])}/draft`,
         kind: 'member',
         ownerId: user.id,
         headId: main.headId,
@@ -88,6 +109,33 @@ export const branches = {
       persist();
     }
     return branchView(mine, doc, user);
+  },
+
+  // A new private branch starting at any save point the caller can see.
+  // Starting from an old save point is how you try a different direction without losing the current one.
+  async create(docId, { name, fromCommitId }) {
+    await delay(200);
+    const user = requireUser();
+    const doc = requireDoc(docId, user);
+    if (!canWrite(doc, user)) fail('Only owners and members can make branches.', 403);
+    const short = slug(name);
+    if (!short) fail('Give the branch a name, using letters, numbers or dashes.');
+    const fullName = `${slug(user.email.split('@')[0])}/${short}`;
+    if (db.branches.some((b) => b.docId === doc.id && b.name === fullName)) fail(`You already have a branch called ${fullName}.`, 409);
+    const main = db.branches.find((b) => b.id === doc.mainBranchId);
+    const from = fromCommitId || main.headId;
+    if (from) {
+      const commit = findCommit(from);
+      const visible = db.branches.filter((b) => b.docId === doc.id && isVisible(b, user));
+      if (!commit || commit.docId !== doc.id || !visible.some((b) => reachable(b.headId).has(from))) {
+        fail('No save point you can see has that hash.', 404);
+      }
+    }
+    const branch = { id: uid('b'), docId: doc.id, name: fullName, kind: 'member', ownerId: user.id, headId: from, forkedFrom: from, invited: [] };
+    db.branches.push(branch);
+    touch(doc, user.id);
+    persist();
+    return branchView(branch, doc, user);
   },
 
   async open(branchId) {

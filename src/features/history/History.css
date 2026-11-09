@@ -95,6 +95,18 @@
 .history-view-head p {
   margin: 0;
 }
+.history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.history-branch {
+  max-width: 360px;
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  background: var(--sheet);
+  border-left: 3px solid var(--carbon);
+}
 .full-hash {
   word-break: break-all;
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/index.js';
 import { formatDate } from '../../lib/format.js';
 import { shortHash } from '../../lib/hash.js';
@@ -9,6 +9,7 @@ import { diffStats, paragraphDiff } from '../../lib/diff.js';
 import DiffView from '../pulls/DiffView.jsx';
 import { DiffModePicker, useDiffMode } from '../pulls/DiffMode.jsx';
 import { fetchBranches, restoreCommit } from '../branches/branchesSlice.js';
+import NewBranch from '../branches/NewBranch.jsx';
 import { originNames } from '../editor/ProvenanceLegend.jsx';
 import './History.css';
 
@@ -26,6 +27,8 @@ export default function History() {
   const [verified, setVerified] = useState({});
   const [selected, setSelected] = useState(null);
   const [message, setMessage] = useState(null);
+  const navigate = useNavigate();
+  const [branchingFrom, setBranchingFrom] = useState(null);
   const [view, setView] = useState('changes'); // 'changes' | 'text'
   const [mode, setMode] = useDiffMode();
   const [parent, setParent] = useState(null); // { id, paragraphs } of the selected commit's first parent
@@ -155,12 +158,29 @@ export default function History() {
                   SHA-256 <code className="hash full-hash">{selected.id}</code>
                 </p>
               </div>
-              {branch?.canEdit && selected.id !== items[0]?.id && (
-                <button className="btn" onClick={onRestore}>
-                  Restore this version
-                </button>
-              )}
+              <div className="history-actions">
+                {branch?.canEdit && selected.id !== items[0]?.id && (
+                  <button className="btn" onClick={onRestore}>
+                    Restore this version
+                  </button>
+                )}
+                {['owner', 'member'].includes(doc.myRole) && branchingFrom !== selected.id && (
+                  <button className="btn" onClick={() => setBranchingFrom(selected.id)}>
+                    Start a branch here
+                  </button>
+                )}
+              </div>
             </div>
+            {branchingFrom === selected.id && (
+              <div className="history-branch">
+                <NewBranch
+                  docId={doc.id}
+                  starts={[{ label: `save point ${shortHash(selected.id)}`, commitId: selected.id }]}
+                  onCreated={(b) => navigate(`..?branch=${b.id}`, { relative: 'path' })}
+                  onCancel={() => setBranchingFrom(null)}
+                />
+              </div>
+            )}
             <div className="history-tabs small">
               <span role="radiogroup" aria-label="Show" className="diff-modes">
                 {[
