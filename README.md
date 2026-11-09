@@ -35,8 +35,15 @@ Demo accounts (any password of 8+ characters):
 2. Merge PR #3 (already approved by the reviewer). It fast-forwards main.
 3. Log in as Safee and approve PR #2. Both branches changed the opening paragraph, so it opens the
    conflict screen.
-4. As Afzal, ask the AI to rewrite a paragraph, then accept, edit or reject each change.
-5. Check the ledger and the process record, and verify the record against the history.
+4. As Afzal, open your draft again. Main has moved, so use **Update from main**. Both of you changed
+   the opening paragraph, so pick which version to keep.
+5. Make a new branch from the Draft page, or pick an old save point in History and start a branch
+   there. Open a pull request from whichever branch you like.
+6. On a pull request or in History, compare by words, sentences or whole paragraphs.
+7. As Afzal, ask the AI to rewrite a paragraph, then accept, edit or reject each change.
+8. Check the ledger and the process record, and verify the record against the history.
+
+Owners and members can rename a document from its header.
 
 ## Structure
 
@@ -71,11 +78,14 @@ enforces the same rules, so it doubles as a reference for the Express handlers.
 | GET    | `/documents`                       | Documents the caller is a member of                |
 | POST   | `/documents`                       |                                                    |
 | GET    | `/documents/:id`                   | Includes `myRole`                                  |
+| PATCH  | `/documents/:id`                   | Rename; owners and members, old titles kept        |
 | POST   | `/documents/:id/members`           | Owner only                                         |
 | PATCH  | `/documents/:id/members/:userId`   | Owner only                                         |
 | GET    | `/documents/:id/branches`          | Private branches filtered out                      |
+| POST   | `/documents/:id/branches`          | New private branch from any visible save point     |
 | PUT    | `/documents/:id/branches/mine`     | Creates the caller's draft branch if needed        |
-| GET    | `/branches/:id`                    | Branch plus head commit                            |
+| GET    | `/branches/:id`                    | Branch, head commit and `behindMain`               |
+| POST   | `/branches/:id/update-from-main`   | Merges main in; returns conflicts until resolved   |
 | POST   | `/branches/:id/commits`            | Compare-and-set on `expectedHeadId`, 409 if stale  |
 | GET    | `/branches/:id/commits?cursor&limit` | Paginated history                                |
 | POST   | `/branches/:id/restore`            | Writes a new commit, never rewrites history        |
@@ -96,6 +106,13 @@ enforces the same rules, so it doubles as a reference for the Express handlers.
 
 Socket.IO events (`src/lib/socket.js`): `branch:join`, `branch:leave`, `presence`, `para:lock`,
 `para:unlock`, and `job:done` (to replace AI job polling).
+
+## Branches
+
+A new branch is a copy of one save point and doesn't follow main on its own. When main moves on,
+the draft screen offers **Update from main**. If the branch has no save points of its own, it
+fast-forwards. Otherwise it writes a merge save point with both parents, so the history shows when
+main's work came in.
 
 ## Commit hashes
 
