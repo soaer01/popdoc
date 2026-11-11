@@ -6,6 +6,7 @@ export const usingMock = !import.meta.env.VITE_API_URL;
 
 // Responses from the mock are cloned, the way JSON over the network would be, so the mock's
 // in-memory data never shares objects with the (frozen) Redux state.
+// In real mode, rest.js already returns fresh objects from JSON.parse inside fetch.
 function overNetwork(group) {
   return Object.fromEntries(
     Object.entries(group).map(([name, fn]) => [name, async (...args) => structuredClone(await fn(...structuredClone(args)))])

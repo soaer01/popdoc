@@ -14,7 +14,8 @@ export const rest = {
     create: (body) => http('/documents', { method: 'POST', body }),
     rename: (docId, body) => http(`/documents/${docId}`, { method: 'PATCH', body }),
     addMember: (docId, body) => http(`/documents/${docId}/members`, { method: 'POST', body }),
-    setRole: (docId, body) => http(`/documents/${docId}/members/${body.userId}`, { method: 'PATCH', body }),
+    setRole: (docId, { userId, role }) =>
+      http(`/documents/${docId}/members/${userId}`, { method: 'PATCH', body: { role } }),
   },
   branches: {
     list: (docId) => http(`/documents/${docId}/branches`),
