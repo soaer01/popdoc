@@ -38,8 +38,16 @@ server.listen(4001, async () => {
     { name: 'POST /api/branches/b_main/commits', call: () => request('/api/branches/b_main/commits', { method: 'POST', body: { message: 'Test commit', paragraphs: [] } }) },
     { name: 'POST /api/branches/b_main/update-from-main', call: () => request('/api/branches/b_main/update-from-main', { method: 'POST', body: {} }) },
     { name: 'GET /api/branches/b_main/commits', call: () => request('/api/branches/b_main/commits') },
-    { name: 'GET /api/commits/c_1', call: () => request('/api/commits/c_1') },
-    { name: 'POST /api/branches/b_main/restore', call: () => request('/api/branches/b_main/restore', { method: 'POST', body: { commitId: 'c_1' } }) },
+    { name: 'GET /api/commits/:commitId', call: async () => {
+      const list = await request('/api/branches/b_main/commits');
+      const cid = list.data?.items?.[0]?.id || 'c_1';
+      return request(`/api/commits/${cid}`);
+    } },
+    { name: 'POST /api/branches/b_main/restore', call: async () => {
+      const list = await request('/api/branches/b_main/commits');
+      const cid = list.data?.items?.[0]?.id || 'c_1';
+      return request('/api/branches/b_main/restore', { method: 'POST', body: { commitId: cid } });
+    } },
     { name: 'GET /api/branches/b_main/status', call: () => request('/api/branches/b_main/status') },
     { name: 'GET /api/documents/d_1/pulls', call: () => request('/api/documents/d_1/pulls') },
     { name: 'POST /api/documents/d_1/pulls', call: () => request('/api/documents/d_1/pulls', { method: 'POST', body: { sourceBranchId: 'b_afzal', title: 'New PR', contributionType: 'idea' } }) },

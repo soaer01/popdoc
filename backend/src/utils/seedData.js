@@ -1,245 +1,228 @@
-export const initialUsers = [
-  { id: 'u_afzal', _id: 'u_afzal', name: 'Mian Afzal Saeed', email: 'afzal@popdoc.dev' },
-  { id: 'u_safee', _id: 'u_safee', name: 'Safee Akmal', email: 'safee@popdoc.dev' },
-  { id: 'u_reviewer', _id: 'u_reviewer', name: 'Dr. Hina Qureshi', email: 'hina@popdoc.dev' },
-];
+import { hashCommit } from './hash.js';
 
-export const initialDocs = [
-  {
-    id: 'd_1',
-    _id: 'd_1',
-    title: 'Why detectors can’t prove authorship',
-    ownerId: 'u_afzal',
-    members: [
-      { userId: 'u_afzal', role: 'owner', lastActiveAt: new Date().toISOString() },
-      { userId: 'u_safee', role: 'member', lastActiveAt: new Date().toISOString() },
-      { userId: 'u_reviewer', role: 'reviewer', lastActiveAt: new Date().toISOString() },
-    ],
-    round: 'open',
-    ledgerShared: false,
-    mainBranchId: 'b_main',
-    titleHistory: [],
-    createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
-  },
-  {
-    id: 'd_2',
-    _id: 'd_2',
-    title: 'Lab 4 report: database indexing',
-    ownerId: 'u_safee',
-    members: [
-      { userId: 'u_safee', role: 'owner', lastActiveAt: new Date().toISOString() },
-      { userId: 'u_afzal', role: 'member', lastActiveAt: new Date().toISOString() },
-    ],
-    round: 'open',
-    ledgerShared: false,
-    mainBranchId: 'b_d2_main',
-    titleHistory: [],
-    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-  },
-];
+const day = 86400000;
+const ago = (days, hours = 0) => new Date(Date.now() - days * day - hours * 3600000).toISOString();
 
-export const initialBranches = [
-  { id: 'b_main', _id: 'b_main', docId: 'd_1', name: 'main', kind: 'main', ownerId: null, headId: 'c_2', invited: [] },
-  { id: 'b_afzal', _id: 'b_afzal', docId: 'd_1', name: 'afzal/draft', kind: 'member', ownerId: 'u_afzal', headId: 'c_afzal', invited: [] },
-  { id: 'b_safee', _id: 'b_safee', docId: 'd_1', name: 'safee/draft', kind: 'member', ownerId: 'u_safee', headId: 'c_safee2', invited: [] },
-  { id: 'b_d2_main', _id: 'b_d2_main', docId: 'd_2', name: 'main', kind: 'main', ownerId: null, headId: null, invited: [] },
-];
+function createCommit(fields) {
+  const c = { ...fields };
+  c.id = hashCommit(c);
+  c._id = c.id;
+  return c;
+}
 
-export const initialCommits = [
-  {
-    id: 'c_1',
-    _id: 'c_1',
+export function buildSeedData() {
+  const users = [
+    { id: 'u_afzal', _id: 'u_afzal', name: 'Mian Afzal Saeed', email: 'afzal@popdoc.dev' },
+    { id: 'u_safee', _id: 'u_safee', name: 'Safee Akmal', email: 'safee@popdoc.dev' },
+    { id: 'u_reviewer', _id: 'u_reviewer', name: 'Dr. Hina Qureshi', email: 'hina@popdoc.dev' },
+  ];
+
+  const p1 = {
+    id: 'p_1',
+    text: 'Most students now write with an AI tool open in another tab. What no tool records is how a piece of group work was actually produced.',
+    origin: 'typed',
+    authorId: 'u_afzal',
+  };
+  const p2 = {
+    id: 'p_2',
+    text: 'Detectors cannot settle the question. In one study they flagged 61% of essays by non-native English writers as AI-generated, even though people wrote all of them.',
+    origin: 'typed',
+    authorId: 'u_safee',
+    prNumber: 1,
+  };
+  const p3 = {
+    id: 'p_3',
+    text: 'If the version history is the evidence, a group can show who wrote each paragraph and where AI helped, instead of arguing about a detector score.',
+    origin: 'typed',
+    authorId: 'u_afzal',
+  };
+
+  const c1 = createCommit({
     docId: 'd_1',
     branchId: 'b_main',
     parents: [],
     authorId: 'u_afzal',
     message: 'Start the introduction',
-    paragraphs: [
-      {
-        id: 'p_1',
-        text: 'Most students now write with an AI tool open in another tab. What no tool records is how a piece of group work was actually produced.',
-        origin: 'typed',
-        authorId: 'u_afzal',
-      },
-    ],
-    createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
-  },
-  {
-    id: 'c_safee',
-    _id: 'c_safee',
+    paragraphs: [p1],
+    createdAt: ago(6),
+  });
+
+  const cSafee = createCommit({
     docId: 'd_1',
     branchId: 'b_safee',
-    parents: ['c_1'],
+    parents: [c1.id],
     authorId: 'u_safee',
     message: 'Add the detector bias evidence',
-    paragraphs: [
-      {
-        id: 'p_1',
-        text: 'Most students now write with an AI tool open in another tab. What no tool records is how a piece of group work was actually produced.',
-        origin: 'typed',
-        authorId: 'u_afzal',
-      },
-      {
-        id: 'p_2',
-        text: 'Detectors cannot settle the question. In one study they flagged 61% of essays by non-native English writers as AI-generated, even though people wrote all of them.',
-        origin: 'typed',
-        authorId: 'u_safee',
-      },
-    ],
-    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-  },
-  {
-    id: 'c_2',
-    _id: 'c_2',
+    paragraphs: [p1, { ...p2, prNumber: undefined }],
+    createdAt: ago(5, 3),
+  });
+
+  const c2 = createCommit({
     docId: 'd_1',
     branchId: 'b_main',
-    parents: ['c_1', 'c_safee'],
+    parents: [c1.id, cSafee.id],
     authorId: 'u_afzal',
     message: 'Merge pull request #1: Detector bias evidence',
-    paragraphs: [
-      {
-        id: 'p_1',
-        text: 'Most students now write with an AI tool open in another tab. What no tool records is how a piece of group work was actually produced.',
-        origin: 'typed',
-        authorId: 'u_afzal',
-      },
-      {
-        id: 'p_2',
-        text: 'Detectors cannot settle the question. In one study they flagged 61% of essays by non-native English writers as AI-generated, even though people wrote all of them.',
-        origin: 'typed',
-        authorId: 'u_safee',
-        prNumber: 1,
-      },
-    ],
-    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-  },
-  {
-    id: 'c_afzal',
-    _id: 'c_afzal',
+    paragraphs: [p1, p2],
+    createdAt: ago(5),
+  });
+
+  const cAfzal = createCommit({
     docId: 'd_1',
     branchId: 'b_afzal',
-    parents: ['c_2'],
+    parents: [c2.id],
     authorId: 'u_afzal',
     message: 'Propose the core argument',
     paragraphs: [
       {
-        id: 'p_1',
+        ...p1,
         text: 'Most students now write with an AI tool open in another tab, yet no tool records how a piece of group work was actually produced.',
-        origin: 'typed',
-        authorId: 'u_afzal',
       },
-      {
-        id: 'p_2',
-        text: 'Detectors cannot settle the question. In one study they flagged 61% of essays by non-native English writers as AI-generated, even though people wrote all of them.',
-        origin: 'typed',
-        authorId: 'u_safee',
-        prNumber: 1,
-      },
-      {
-        id: 'p_3',
-        text: 'If the version history is the evidence, a group can show who wrote each paragraph and where AI helped, instead of arguing about a detector score.',
-        origin: 'typed',
-        authorId: 'u_afzal',
-      },
+      p2,
+      p3,
     ],
-    createdAt: new Date(Date.now() - 5 * 3600000).toISOString(),
-  },
-  {
-    id: 'c_safee2',
-    _id: 'c_safee2',
+    createdAt: ago(0, 5),
+  });
+
+  const cSafee2 = createCommit({
     docId: 'd_1',
     branchId: 'b_safee',
-    parents: ['c_2'],
+    parents: [c2.id],
     authorId: 'u_safee',
     message: 'Sharpen the opening sentence',
     paragraphs: [
       {
-        id: 'p_1',
+        ...p1,
         text: 'Most students now draft with an AI tool open beside them. No common tool records how group work was actually produced.',
-        origin: 'typed',
         authorId: 'u_safee',
       },
-      {
-        id: 'p_2',
-        text: 'Detectors cannot settle the question. In one study they flagged 61% of essays by non-native English writers as AI-generated, even though people wrote all of them.',
-        origin: 'typed',
-        authorId: 'u_safee',
-        prNumber: 1,
-      },
+      p2,
     ],
-    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
-  },
-];
+    createdAt: ago(4),
+  });
 
-export const initialPulls = [
-  {
-    id: 'pr_1',
-    _id: 'pr_1',
-    number: 1,
-    docId: 'd_1',
-    sourceBranchId: 'b_safee',
-    targetBranchId: 'b_main',
-    authorId: 'u_safee',
-    title: 'Detector bias evidence',
-    description: 'Adds the Liang et al. finding to support the opening claim.',
-    contributionType: 'evidence',
-    confirmedType: 'evidence',
-    aiInvolved: false,
-    status: 'merged',
-    baseId: 'c_1',
-    headId: 'c_safee',
-    approvals: ['u_afzal'],
-    comments: [],
-    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    mergedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    mergeCommitId: 'c_2',
-  },
-  {
-    id: 'pr_2',
-    _id: 'pr_2',
-    number: 2,
-    docId: 'd_1',
-    sourceBranchId: 'b_afzal',
-    targetBranchId: 'b_main',
-    authorId: 'u_afzal',
-    title: 'Core argument: history as evidence',
-    description: 'States the thesis that the rest of the paper defends.',
-    contributionType: 'idea',
-    confirmedType: null,
-    aiInvolved: false,
-    status: 'open',
-    baseId: 'c_2',
-    headId: 'c_afzal',
-    approvals: [],
-    comments: [
-      {
-        id: 'cm_1',
-        authorId: 'u_reviewer',
-        paragraphId: 'p_3',
-        body: 'Good thesis. Say what kind of evidence a reviewer would actually check.',
-        createdAt: new Date().toISOString(),
-      },
-    ],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'pr_3',
-    _id: 'pr_3',
-    number: 3,
-    docId: 'd_1',
-    sourceBranchId: 'b_safee',
-    targetBranchId: 'b_main',
-    authorId: 'u_safee',
-    title: 'Tighter opening sentence',
-    description: 'Two short sentences read better than one long one.',
-    contributionType: 'wording',
-    confirmedType: 'wording',
-    aiInvolved: false,
-    status: 'open',
-    baseId: 'c_2',
-    headId: 'c_safee2',
-    approvals: ['u_reviewer'],
-    comments: [],
-    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
-  },
-];
+  const documents = [
+    {
+      id: 'd_1',
+      _id: 'd_1',
+      title: 'Why detectors can’t prove authorship',
+      ownerId: 'u_afzal',
+      members: [
+        { userId: 'u_afzal', role: 'owner', lastActiveAt: ago(0, 5) },
+        { userId: 'u_safee', role: 'member', lastActiveAt: ago(4) },
+        { userId: 'u_reviewer', role: 'reviewer', lastActiveAt: ago(5) },
+      ],
+      round: 'open',
+      ledgerShared: false,
+      mainBranchId: 'b_main',
+      titleHistory: [],
+      createdAt: ago(6),
+    },
+    {
+      id: 'd_2',
+      _id: 'd_2',
+      title: 'Lab 4 report: database indexing',
+      ownerId: 'u_safee',
+      members: [
+        { userId: 'u_safee', role: 'owner', lastActiveAt: ago(1) },
+        { userId: 'u_afzal', role: 'member', lastActiveAt: ago(2) },
+      ],
+      round: 'open',
+      ledgerShared: false,
+      mainBranchId: 'b_d2_main',
+      titleHistory: [],
+      createdAt: ago(2),
+    },
+  ];
+
+  const branches = [
+    { id: 'b_main', _id: 'b_main', docId: 'd_1', name: 'main', kind: 'main', ownerId: null, headId: c2.id, invited: [] },
+    { id: 'b_afzal', _id: 'b_afzal', docId: 'd_1', name: 'afzal/draft', kind: 'member', ownerId: 'u_afzal', headId: cAfzal.id, invited: [] },
+    { id: 'b_safee', _id: 'b_safee', docId: 'd_1', name: 'safee/draft', kind: 'member', ownerId: 'u_safee', headId: cSafee2.id, invited: [] },
+    { id: 'b_d2_main', _id: 'b_d2_main', docId: 'd_2', name: 'main', kind: 'main', ownerId: null, headId: null, invited: [] },
+  ];
+
+  const commits = [c1, cSafee, c2, cAfzal, cSafee2];
+
+  const pullRequests = [
+    {
+      id: 'pr_1',
+      _id: 'pr_1',
+      number: 1,
+      docId: 'd_1',
+      sourceBranchId: 'b_safee',
+      targetBranchId: 'b_main',
+      authorId: 'u_safee',
+      title: 'Detector bias evidence',
+      description: 'Adds the Liang et al. finding to support the opening claim.',
+      contributionType: 'evidence',
+      confirmedType: 'evidence',
+      aiInvolved: false,
+      status: 'merged',
+      baseId: c1.id,
+      headId: cSafee.id,
+      approvals: ['u_afzal'],
+      comments: [],
+      createdAt: ago(5, 2),
+      mergedAt: ago(5),
+      mergeCommitId: c2.id,
+    },
+    {
+      id: 'pr_2',
+      _id: 'pr_2',
+      number: 2,
+      docId: 'd_1',
+      sourceBranchId: 'b_afzal',
+      targetBranchId: 'b_main',
+      authorId: 'u_afzal',
+      title: 'Core argument: history as evidence',
+      description: 'States the thesis that the rest of the paper defends.',
+      contributionType: 'idea',
+      confirmedType: null,
+      aiInvolved: false,
+      status: 'open',
+      baseId: c2.id,
+      headId: cAfzal.id,
+      approvals: [],
+      comments: [
+        {
+          id: 'cm_1',
+          authorId: 'u_reviewer',
+          paragraphId: 'p_3',
+          body: 'Good thesis. Say what kind of evidence a reviewer would actually check.',
+          createdAt: ago(0, 2),
+        },
+      ],
+      createdAt: ago(0, 4),
+    },
+    {
+      id: 'pr_3',
+      _id: 'pr_3',
+      number: 3,
+      docId: 'd_1',
+      sourceBranchId: 'b_safee',
+      targetBranchId: 'b_main',
+      authorId: 'u_safee',
+      title: 'Tighter opening sentence',
+      description: 'Two short sentences read better than one long one.',
+      contributionType: 'wording',
+      confirmedType: 'wording',
+      aiInvolved: false,
+      status: 'open',
+      baseId: c2.id,
+      headId: cSafee2.id,
+      approvals: ['u_reviewer'],
+      comments: [],
+      createdAt: ago(4),
+    },
+  ];
+
+  return { users, documents, branches, commits, pullRequests };
+}
+
+const initialSeed = buildSeedData();
+export const initialUsers = initialSeed.users;
+export const initialDocs = initialSeed.documents;
+export const initialBranches = initialSeed.branches;
+export const initialCommits = initialSeed.commits;
+export const initialPulls = initialSeed.pullRequests;

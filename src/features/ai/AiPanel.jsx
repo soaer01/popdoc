@@ -12,13 +12,15 @@ const actions = {
 };
 const statusText = { queued: 'Waiting in the queue', running: 'Writing a proposal', done: 'Proposal ready' };
 
-export default function AiPanel({ docId, branch, paragraphs, dirty }) {
+export default function AiPanel({ docId, branch, paragraphs = [], dirty }) {
   const dispatch = useDispatch();
   const jobs = useSelector((s) => s.ai.jobsByDoc[docId]) || [];
   const { submitting, error } = useSelector((s) => s.ai);
   const [action, setAction] = useState('rewrite');
   const [language, setLanguage] = useState('English');
   const [picked, setPicked] = useState([]);
+
+  if (!docId || !branch) return null;
 
   const active = jobs.some((j) => j.status !== 'done');
 

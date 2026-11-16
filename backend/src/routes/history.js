@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { store } from '../utils/store.js';
+import { hashCommit } from '../utils/hash.js';
 
 const router = Router();
 
@@ -10,9 +11,10 @@ router.get('/branches/:branchId/commits', (req, res) => {
   const limit = parseInt(req.query.limit, 10) || 15;
 
   const branch = store.state.branches.find((b) => b.id === branchId || b._id === branchId);
-  const commits = store.state.commits.filter(
-    (c) => c.branchId === branchId || (branch && c.docId === branch.docId)
-  );
+  const commits = store.state.commits
+    .filter((c) => c.branchId === branchId || (branch && c.docId === branch.docId))
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const page = commits.slice(cursor, cursor + limit);
   const items = page.map((c) => ({
@@ -51,12 +53,18 @@ router.get('/commits/:commitId', (req, res) => {
 // POST /branches/:branchId/restore
 router.post('/branches/:branchId/restore', (req, res) => {
   const { branchId } = req.params;
-  const { commitId } = req.body || {};
+  const { commitId, expectedHeadId } = req.body || {};
   const user = req.user;
   const branch = store.state.branches.find((b) => b.id === branchId || b._id === branchId);
 
   if (!branch) {
     return res.status(404).json({ message: 'Branch not found.' });
+  }
+
+  if (expectedHeadId !== undefined && branch.headId !== expectedHeadId) {
+    return res.status(409).json({
+      message: 'This branch changed since you opened it. Reload and try again.',
+    });
   }
 
   const doc = store.state.documents.find((d) => d.id === branch.docId || d._id === branch.docId);
@@ -66,10 +74,7 @@ router.post('/branches/:branchId/restore', (req, res) => {
     return res.status(404).json({ message: 'Commit not found.' });
   }
 
-  const newCommitId = `c_${Math.random().toString(36).slice(2, 12)}`;
   const restoredCommit = {
-    id: newCommitId,
-    _id: newCommitId,
     docId: branch.docId,
     branchId: branch.id,
     parents: branch.headId ? [branch.headId] : [],
@@ -79,8 +84,12 @@ router.post('/branches/:branchId/restore', (req, res) => {
     createdAt: new Date().toISOString(),
   };
 
+  const hash = hashCommit(restoredCommit);
+  restoredCommit.id = hash;
+  restoredCommit._id = hash;
+
   store.state.commits.push(restoredCommit);
-  branch.headId = newCommitId;
+  branch.headId = hash;
 
   res.json(store.branchPayload(branch, doc, user));
 });

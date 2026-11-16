@@ -1,7 +1,23 @@
 import { Router } from 'express';
 import { store } from '../utils/store.js';
+import { hashCommit } from '../utils/hash.js';
 
 const router = Router();
+
+const ORIGINS = ['typed', 'pasted', 'ai', 'ai-edited', 'translated'];
+
+function cleanParagraphs(list, defaultAuthorId) {
+  if (!Array.isArray(list)) return [];
+  return list.map((p) => ({
+    id: String(p.id || `p_${Math.random().toString(36).slice(2, 10)}`),
+    text: String(p.text ?? '')
+      .replace(/[\u0000-\u0008\u000B-\u001F]/g, '')
+      .slice(0, 10000),
+    origin: ORIGINS.includes(p.origin) ? p.origin : 'typed',
+    authorId: p.authorId || defaultAuthorId || null,
+    ...(p.prNumber ? { prNumber: p.prNumber } : {}),
+  }));
+}
 
 // GET /documents/:docId/branches
 router.get('/documents/:docId/branches', (req, res) => {
@@ -88,7 +104,7 @@ router.get('/branches/:branchId', (req, res) => {
 // POST /branches/:branchId/commits
 router.post('/branches/:branchId/commits', (req, res) => {
   const { branchId } = req.params;
-  const { message, paragraphs } = req.body || {};
+  const { message, paragraphs, expectedHeadId } = req.body || {};
   const user = req.user;
   const branch = store.state.branches.find((b) => b.id === branchId || b._id === branchId);
 
@@ -96,23 +112,32 @@ router.post('/branches/:branchId/commits', (req, res) => {
     return res.status(404).json({ message: 'Branch not found.' });
   }
 
+  // Compare-and-set: verify branch head hasn't moved unexpectedly
+  if (expectedHeadId !== undefined && branch.headId !== expectedHeadId) {
+    return res.status(409).json({
+      message: 'This branch changed since you opened it. Reload it to see the latest save point.',
+    });
+  }
+
   const doc = store.state.documents.find((d) => d.id === branch.docId || d._id === branch.docId);
-  const commitId = `c_${Math.random().toString(36).slice(2, 12)}`;
+  const cleanedParagraphs = cleanParagraphs(paragraphs, user.id);
 
   const newCommit = {
-    id: commitId,
-    _id: commitId,
     docId: branch.docId,
     branchId: branch.id,
     parents: branch.headId ? [branch.headId] : [],
     authorId: user.id,
-    message: (message || 'Save point').trim(),
-    paragraphs: paragraphs || [],
+    message: String(message || '').trim().slice(0, 200) || 'Save point',
+    paragraphs: cleanedParagraphs,
     createdAt: new Date().toISOString(),
   };
 
+  const hash = hashCommit(newCommit);
+  newCommit.id = hash;
+  newCommit._id = hash;
+
   store.state.commits.push(newCommit);
-  branch.headId = commitId;
+  branch.headId = hash;
 
   res.status(201).json(store.branchPayload(branch, doc, user));
 });

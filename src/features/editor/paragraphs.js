@@ -32,7 +32,7 @@ export function fromDoc(json, { base = [], userId }) {
     const before = baseById.get(pid);
     if (before && before.text !== text) {
       if (before.origin === 'ai') origin = 'ai-edited';
-      authorId = authorId || userId;
+      authorId = userId;
     }
     if (!text.trim() && !before) continue; // drop empty new paragraphs
     out.push({ id: pid, text, origin: origin || 'typed', authorId: authorId || userId, ...(before?.prNumber && before.text === text ? { prNumber: before.prNumber } : {}) });
