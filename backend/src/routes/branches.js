@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { store } from '../utils/store.js';
 import { hashCommit } from '../utils/hash.js';
+import { reachable, mergeBase, threeWayMerge, applyResolutions } from '../utils/merge.js';
 
 const router = Router();
 
@@ -145,6 +146,7 @@ router.post('/branches/:branchId/commits', (req, res) => {
 // POST /branches/:branchId/update-from-main
 router.post('/branches/:branchId/update-from-main', (req, res) => {
   const { branchId } = req.params;
+  const { expectedHeadId, resolutions } = req.body || {};
   const user = req.user;
   const branch = store.state.branches.find((b) => b.id === branchId || b._id === branchId);
 
@@ -155,8 +157,58 @@ router.post('/branches/:branchId/update-from-main', (req, res) => {
   const doc = store.state.documents.find((d) => d.id === branch.docId || d._id === branch.docId);
   const main = store.findMainBranch(branch.docId);
 
-  if (main?.headId) {
+  if (expectedHeadId !== undefined && branch.headId !== expectedHeadId) {
+    return res.status(409).json({ message: 'This branch changed since you opened it. Reload it first.' });
+  }
+
+  const commitsMap = new Map(store.state.commits.map((c) => [c.id || c._id, c]));
+  if (!main?.headId || reachable(branch.headId, commitsMap).has(main.headId)) {
+    return res.json(store.branchPayload(branch, doc, user));
+  }
+
+  if (!branch.headId || reachable(main.headId, commitsMap).has(branch.headId)) {
     branch.headId = main.headId;
+  } else {
+    const baseId = mergeBase(branch.headId, main.headId, store.state.commits);
+    const base = store.findCommit(baseId)?.paragraphs || [];
+    const mine = store.findCommit(branch.headId)?.paragraphs || [];
+    const theirs = store.findCommit(main.headId)?.paragraphs || [];
+    let { paragraphs, conflicts } = threeWayMerge(base, mine, theirs);
+
+    if (conflicts.length) {
+      const missing = conflicts.filter(
+        (c) => !resolutions || (!['mine', 'main'].includes(resolutions[c.id]) && !resolutions[c.id])
+      );
+      if (missing.length) {
+        return res.json({ ...store.branchPayload(branch, doc, user), conflicts });
+      }
+      const chosen = Object.fromEntries(
+        conflicts.map((c) => [
+          c.id,
+          resolutions[c.id] === 'mine'
+            ? c.current
+            : resolutions[c.id] === 'main'
+            ? c.incoming
+            : resolutions[c.id],
+        ])
+      );
+      paragraphs = applyResolutions(paragraphs, chosen);
+    }
+
+    const commitData = {
+      docId: branch.docId,
+      branchId: branch.id,
+      parents: [branch.headId, main.headId],
+      authorId: user.id,
+      message: 'Update from main',
+      paragraphs: cleanParagraphs(paragraphs, user.id),
+      createdAt: new Date().toISOString(),
+    };
+    const hash = hashCommit(commitData);
+    commitData.id = hash;
+    commitData._id = hash;
+    store.state.commits.push(commitData);
+    branch.headId = hash;
   }
 
   res.json(store.branchPayload(branch, doc, user));
@@ -172,12 +224,18 @@ router.get('/branches/:branchId/status', (req, res) => {
   }
 
   const main = store.findMainBranch(branch.docId);
+  const commitsMap = new Map(store.state.commits.map((c) => [c.id || c._id, c]));
+  const hasChanges =
+    Boolean(main) &&
+    branch.headId !== main.headId &&
+    !reachable(main.headId, commitsMap).has(branch.headId);
+
   const openPr = store.state.pullRequests.find(
     (p) => p.sourceBranchId === branch.id && p.status === 'open'
   );
 
   res.json({
-    hasChanges: Boolean(main) && branch.headId !== main.headId,
+    hasChanges,
     openPr: openPr ? openPr.id : null,
   });
 });

@@ -7,6 +7,7 @@ import {
   initialCommits,
   initialPulls,
 } from './seedData.js';
+import { reachable } from './merge.js';
 
 // In-memory runtime state that syncs with Mongoose when DB is available
 let state = {
@@ -96,13 +97,16 @@ export function findCommit(id) {
 export function branchPayload(branch, doc, user) {
   const main = doc ? findMainBranch(doc.id || doc._id) : null;
   const head = findCommit(branch.headId);
+  const commitsMap = new Map(state.commits.map((c) => [c.id || c._id, c]));
+  const branchAncestors = reachable(branch.headId, commitsMap);
+  const isBehind =
+    branch.kind === 'member' &&
+    Boolean(main?.headId) &&
+    !branchAncestors.has(main.headId);
   return {
     branch: branchView(branch, doc, user),
     head: head || null,
-    behindMain:
-      branch.kind === 'member' &&
-      Boolean(main?.headId) &&
-      branch.headId !== main?.headId,
+    behindMain: isBehind,
   };
 }
 
