@@ -9,17 +9,70 @@ Web Programming project, BDS-7A. Mian Afzal Saeed (23L-2505), Safee Akmal (23L-2
 ## Stack
 
 - **Frontend (this repo):** React 18, Redux Toolkit, React Router, Tiptap, jsdiff, Socket.IO client
-- **Backend (next):** Node.js, Express, Socket.IO, MongoDB with Mongoose, server-side LLM calls
+- **Backend (`/backend`):** Node.js, Express, Socket.IO, MongoDB with Mongoose (with automatic in-memory fallback), SHA-256 provenance hashing, three-way merge engine, background AI jobs
 
-## Running the client
+## Running Locally
+
+### 1. Backend Setup
+
+The backend is an Express server running on port `4000`. It connects to MongoDB via Mongoose, with an automatic in-memory fallback if MongoDB is not running locally.
 
 ```bash
+cd backend
+npm install
+node src/server.js
+# Or with automatic reload during development:
+npm run dev
+```
+
+- **Port**: `4000` (configurable via `PORT` in `backend/.env`)
+- **Database**: `mongodb://localhost:27017/popdoc` (if MongoDB is unavailable, PopDoc automatically runs with an in-memory seed store for instant zero-config testing)
+- **Environment config**: See `backend/.env.example`. Copy to `backend/.env` if customization is needed.
+
+### 2. Frontend Setup
+
+The frontend is a Vite + React application configured to run on port `5173`.
+
+```bash
+# In the project root directory
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173. With `VITE_API_URL` unset, the client runs on an in-browser mock API
-(`src/api/mock`) that stores its data in localStorage. To reset the demo, clear the site's storage.
+- Open [http://localhost:5173](http://localhost:5173).
+- **Connecting to the local backend**:
+  Create a `.env.local` file from `.env.example`:
+  ```bash
+  cp .env.example .env.local
+  ```
+  Uncomment or set:
+  ```env
+  VITE_API_URL=http://localhost:4000/api
+  VITE_SOCKET_URL=http://localhost:4000
+  ```
+  *(Note: If `VITE_API_URL` is left unset, PopDoc defaults to its in-browser mock API (`src/api/mock`) using localStorage.)*
+
+### 3. Running the Test Suites
+
+The backend includes comprehensive test suites covering all REST endpoints, SHA-256 commit hashing, author attribution, AI background jobs, and git-for-docs merge/conflict resolution:
+
+```bash
+cd backend
+
+# Run all test suites:
+npm test
+
+# Or run individual test suites:
+node test-endpoints.js   # 33 REST endpoints & routing checks
+node test-phase2.js       # Commit hashing, author attribution, AI job proposal
+node test-phase3.js       # Three-way merge, conflict resolution, sync workflows
+```
+
+To run a production build check on the frontend:
+```bash
+# In the project root directory
+npm run build
+```
 
 Demo accounts (any password of 8+ characters):
 
