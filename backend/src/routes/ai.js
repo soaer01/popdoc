@@ -41,17 +41,20 @@ async function runAiJob(jobId) {
   }
 
   const headCommit = store.findCommit(targetBranch.headId);
-  const transformedParagraphs = (headCommit?.paragraphs || []).map((p) => {
-    if (job.paragraphIds.includes(p.id)) {
-      return {
-        ...p,
-        text: transform(job.action, p.text, job),
-        origin: job.action === 'translate' ? 'translated' : 'ai',
-        authorId: AI_USER_ID,
-      };
-    }
-    return p;
-  });
+  const transformedParagraphs = await Promise.all(
+    (headCommit?.paragraphs || []).map(async (p) => {
+      if (job.paragraphIds.includes(p.id)) {
+        const text = await transform(job.action, p.text, job);
+        return {
+          ...p,
+          text,
+          origin: job.action === 'translate' ? 'translated' : 'ai',
+          authorId: AI_USER_ID,
+        };
+      }
+      return p;
+    })
+  );
 
   const aiBranchCount = store.state.branches.filter(
     (b) => b.docId === job.docId && b.kind === 'ai'
